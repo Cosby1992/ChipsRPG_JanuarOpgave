@@ -1,0 +1,142 @@
+03:37:24.288 [JavaFX Application Thread] DEBUG GameApplication      - Logger initialized
+03:37:24.302 [JavaFX Application Thread] DEBUG GameApplication      - Logging settings
+Title: Chip's RPG
+Version: 0.0
+Width: 1280
+Height: 720
+Fullscreen: false
+Intro: false
+Menus: false
+Profiling: false
+Single step:false
+App Mode: DEVELOPER
+Menu Key: ESCAPE
+Stage Style: DECORATED
+Scene Factory: class com.almasb.fxgl.scene.SceneFactory
+Dialog Factory: class com.almasb.fxgl.ui.FXGLDialogFactory
+UI Factory: class com.almasb.fxgl.ui.FXGLUIFactory
+Notification Service: class com.almasb.fxgl.gameplay.notification.XboxNotificationView
+Exception Handler: class com.almasb.fxgl.app.FXGLExceptionHandler
+03:37:24.302 [JavaFX Application Thread] DEBUG GameApplication      - Starting FXGL
+03:37:24.314 [JavaFX Application Thread] INFO  FXGL                 - FXGL-0.5.4 on DESKTOP
+03:37:24.314 [JavaFX Application Thread] INFO  FXGL                 - Source code and latest versions at: https://github.com/AlmasB/FXGL
+03:37:24.314 [JavaFX Application Thread] INFO  FXGL                 -              Join the FXGL chat at: https://gitter.im/AlmasB/FXGL
+03:37:24.315 [JavaFX Application Thread] DEBUG FXGL                 - FXGL started
+03:37:24.315 [JavaFX Application Thread] DEBUG FXGL                 - Initializing FXGL
+03:37:24.355 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/ui/cursors/fxgl_default.png
+03:37:24.447 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/ui/fonts/VarelaRound-Regular.ttf
+03:37:24.576 [JavaFX Application Thread] DEBUG MainWindow           - Creating a JavaFX scene
+03:37:24.607 [JavaFX Application Thread] DEBUG MainWindow           - Target settings size: 1280.0 x 720.0
+03:37:24.607 [JavaFX Application Thread] DEBUG MainWindow           - Scaled scene size:    1280.0 x 720.0
+03:37:24.608 [JavaFX Application Thread] DEBUG MainWindow           - Scaled ratio: (1.0, 1.0)
+03:37:24.610 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/ui/css/fxgl_dark.css
+03:37:24.613 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/textures/fxgl_icon.png
+03:37:24.627 [JavaFX Application Thread] DEBUG MainWindow           - Opening main window
+03:37:24.744 [JavaFX Application Thread] DEBUG MainWindow           - Window border size: (16.0, 39.0)
+03:37:24.744 [JavaFX Application Thread] DEBUG MainWindow           - Scaled size: 1280.0 x 720.0
+03:37:24.744 [JavaFX Application Thread] DEBUG MainWindow           - Scaled ratio: (1.0, 1.0)
+03:37:24.744 [JavaFX Application Thread] DEBUG MainWindow           - Scene size: 1280.0 x 720.0
+03:37:24.745 [JavaFX Application Thread] DEBUG MainWindow           - Stage size: 1296.0 x 759.0
+03:37:24.802 [ForkJoinPool.commonPool-worker-1] DEBUG FS                   - Loaded DesktopFSService
+03:37:24.803 [ForkJoinPool.commonPool-worker-1] DEBUG FXGL                 - Loading FXGL system data
+03:37:24.809 [ForkJoinPool.commonPool-worker-1] DEBUG DesktopFSService     - Reading from: system\fxgl.bundle
+03:37:24.823 [ForkJoinPool.commonPool-worker-1] DEBUG Bundle               - Logging bundle: FXGL
+03:37:24.823 [ForkJoinPool.commonPool-worker-1] DEBUG Bundle               - FXGL.offline.timer.version.check=2019-01-05T00:29:17.871459100
+03:37:24.824 [ForkJoinPool.commonPool-worker-1] DEBUG FXGL                 - Initializing state machine and application states
+03:37:24.826 [ForkJoinPool.commonPool-worker-1] DEBUG AssetLoader          - Loading from disk: /assets/ui/cursors/fxgl_default.png
+03:37:24.891 [ForkJoinPool.commonPool-worker-1] DEBUG AssetLoader          - Loading from disk: /assets/ui/cursors/fxgl_default.png
+03:37:24.897 [ForkJoinPool.commonPool-worker-1] DEBUG AssetLoader          - Loading from cache: /assets/ui/fonts/VarelaRound-Regular.ttf
+03:37:24.900 [ForkJoinPool.commonPool-worker-1] DEBUG AssetLoader          - Loading from disk: /assets/ui/cursors/fxgl_default.png
+03:37:24.903 [ForkJoinPool.commonPool-worker-1] DEBUG GameScene            - Game scene initialized: 1280x720
+03:37:24.908 [ForkJoinPool.commonPool-worker-1] DEBUG GameWorld            - Game world initialized
+03:37:24.960 [ForkJoinPool.commonPool-worker-1] DEBUG PhysicsWorld         - Physics world initialized: appHeight=720, physics.ppm=50,0
+03:37:24.995 [ForkJoinPool.commonPool-worker-1] DEBUG Input                - Registered new binding: Pause - Esc
+03:37:25.041 [JavaFX Application Thread] DEBUG FXGL                 - Running preInit()
+03:37:25.043 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Screenshot - P
+03:37:25.043 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Dev Options - CTRL+0
+03:37:25.044 [JavaFX Application Thread] DEBUG Input                - Registered new binding: System info dump - CTRL+9
+03:37:25.044 [JavaFX Application Thread] DEBUG Input                - Registered new binding: Restart - CTRL+R
+03:37:25.045 [JavaFX Application Thread] INFO  FXGL                 - FXGL initialization took: 0,729 sec
+03:37:25.045 [JavaFX Application Thread] DEBUG LoopRunner           - Starting loop
+03:37:25.047 [JavaFX Application Thread] DEBUG StartupState         - STARTUP
+03:37:25.047 [JavaFX Application Thread] DEBUG GameApplication      - Starting new game
+03:37:25.047 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+03:37:25.048 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/ui/css/fxgl_dark.css
+03:37:25.055 [JavaFX Application Thread] DEBUG AppStateMachine      - StartupState -> LoadingState
+03:37:25.192 [FXGL Background Thread 1 ] DEBUG InitAppTask          - Clearing previous game
+03:37:25.193 [FXGL Background Thread 1 ] DEBUG GameWorld            - Clearing game world
+03:37:25.193 [FXGL Background Thread 1 ] DEBUG PhysicsWorld         - Clearing physics world
+03:37:25.193 [FXGL Background Thread 1 ] DEBUG GameScene            - Clearing game scene
+03:37:25.194 [FXGL Background Thread 1 ] DEBUG InitAppTask          - Initializing Game
+03:37:25.215 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from disk: /assets/json/map_test.json
+03:37:25.450 [FXGL Background Thread 1 ] DEBUG GameWorld            - Clearing removable entities
+03:37:25.450 [FXGL Background Thread 1 ] DEBUG GameWorld            - Setting level from map
+03:37:25.467 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from disk: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.481 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.482 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.483 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.484 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.485 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.486 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.487 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.488 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.488 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.488 [FXGL Background Thread 1 ] DEBUG AssetLoader          - Loading from cache: /assets/textures/PC Computer - Chips Challenge 2 - Everything (1).png
+03:37:25.489 [FXGL Background Thread 1 ] DEBUG GameScene            - Creating render group for layer: BACKGROUND(1000)
+03:37:25.515 [FXGL Background Thread 1 ] DEBUG GameScene            - Creating render group for layer: DEFAULT(100000)
+03:37:25.520 [FXGL Background Thread 1 ] DEBUG InitAppTask          - Initializing Physics
+03:37:25.520 [FXGL Background Thread 1 ] DEBUG InitAppTask          - Initializing UI
+03:37:25.521 [FXGL Background Thread 1 ] DEBUG InitAppTask          - Initialization Complete
+03:37:25.521 [FXGL Background Thread 1 ] INFO  InitAppTask          - Game initialization took: 0,328 sec
+03:37:25.525 [JavaFX Application Thread] DEBUG Input                - Clearing active input actions
+03:37:25.525 [JavaFX Application Thread] DEBUG AssetLoader          - Loading from disk: /assets/ui/css/fxgl_dark.css
+03:37:25.531 [JavaFX Application Thread] DEBUG AppStateMachine      - LoadingState -> PlayState
+03:37:35.652 [JavaFX Application Thread] DEBUG FXGL                 - Exiting FXGL
+03:37:35.652 [JavaFX Application Thread] DEBUG FXGL                 - Shutting down background threads
+03:37:35.653 [JavaFX Application Thread] DEBUG FXGL                 - Saving FXGL system data
+03:37:35.655 [JavaFX Application Thread] DEBUG DesktopFSService     - Writing to: system\fxgl.bundle
+03:37:35.659 [JavaFX Application Thread] DEBUG FXGL                 - Closing logger and exiting JavaFX
