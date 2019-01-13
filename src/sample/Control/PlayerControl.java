@@ -2,6 +2,7 @@ package sample.Control;
 
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import com.almasb.fxgl.extra.entity.components.HealthComponent;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.util.Duration;
@@ -12,7 +13,9 @@ public class PlayerControl extends Component {
 
     private boolean canMove = true;
     private int speed = 100;
-    private ArrayList<Entity> inventory = new ArrayList<Entity>();
+    private ArrayList<String> inventory = new ArrayList<String>();
+    private boolean onIce = false;
+    private String lastMove = "up";
 
 
     private AnimatedTexture texture;
@@ -20,14 +23,14 @@ public class PlayerControl extends Component {
 
     //Constructor
     public PlayerControl() {
-        animIdleForward = new AnimationChannel("forward8test.png", 8, 32, 32, Duration.seconds(1), 0, 0);
-        animForward = new AnimationChannel("forward8test.png", 8, 32, 32, Duration.seconds(1), 0, 7);
-        animIdleBackward = new AnimationChannel("backwards8test.png", 8, 32, 32, Duration.seconds(1), 0, 0);
-        animBackward = new AnimationChannel("backwards8test.png", 8, 32, 32, Duration.seconds(1), 0, 7);
-        animIdleLeft = new AnimationChannel("left8test.png", 8, 32, 32, Duration.seconds(1), 0, 0);
-        animLeft = new AnimationChannel("left8test.png", 8, 32, 32, Duration.seconds(1), 0, 7);
-        animIdleRight = new AnimationChannel("right8test.png", 8, 32, 32, Duration.seconds(1), 0, 0);
-        animRight = new AnimationChannel("right8test.png", 8, 32, 32, Duration.seconds(1), 0, 7);
+        animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
+        animIdleBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
+        animIdleLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
+        animIdleRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
 
 
         texture = new AnimatedTexture(animIdleForward);
@@ -50,38 +53,65 @@ public class PlayerControl extends Component {
         }else{
             speed = 0;
         }
+
+
+        //Ice movement (constant while on ice)
+        if (getLastMove().equalsIgnoreCase("right") && isOnIce()==true){
+            entity.translateX(speed * tpf);
+            setLastMove("right");
+        } else if (getLastMove().equalsIgnoreCase("left") && isOnIce()==true){
+            entity.translateX(-speed * tpf);
+            setLastMove("left");
+        } else if (getLastMove().equalsIgnoreCase("up") && isOnIce() == true){
+            entity.translateY(-speed * tpf);
+            setLastMove("up");
+        } else if (getLastMove().equalsIgnoreCase("down") && isOnIce() == true){
+            entity.translateY(speed * tpf);
+            setLastMove("down");
+        }
+
     }
 
     public void moveRight(double tpf) {
+        if (!isOnIce()) {
             entity.translateX(speed * tpf);
-            //texture.loopAnimationChannel(animRight);
+            setLastMove("right");
+        }
     }
 
     public void moveLeft(double tpf) {
-
-        entity.translateX(-speed * tpf);
-        //texture.loopAnimationChannel(animLeft);
+        if(!isOnIce()) {
+            entity.translateX(-speed * tpf);
+            setLastMove("left");
+        }
     }
 
     public void moveUp(double tpf) {
-
-        entity.translateY(-speed * tpf);
-        //texture.loopAnimationChannel(animForward);
+        if(!isOnIce()) {
+            entity.translateY(-speed * tpf);
+            setLastMove("up");
+        }
     }
 
     public void moveDown(double tpf){
-
+        if(!isOnIce()){
         entity.translateY(speed * tpf);
-        //texture.loopAnimationChannel(animBackward);
+        setLastMove("down");
+        }
     }
 
     //player inventory as ArrayList
     public void addInventory(Entity collectableEntity){
-        inventory.add(collectableEntity);
-        for (int i = 0; i <inventory.size() ; i++) {
-            System.out.println("added to inventory" + inventory.get(i).toString());
+        inventory.add(collectableEntity.getType().toString());
+
+        for (int i = 0; i < inventory.size(); i++) {
+            System.out.println(inventory.get(i));
         }
 
+    }
+
+    public ArrayList<String> getInventory(){
+        return inventory;
     }
 
 
@@ -92,7 +122,6 @@ public class PlayerControl extends Component {
 
     public void setSpeed(int speed) {
         this.speed = speed;
-        System.out.println("speed is set to = " + speed);
     }
 
     public boolean isCanMove() {
@@ -109,5 +138,25 @@ public class PlayerControl extends Component {
 
     public void setTexture(AnimatedTexture texture) {
         this.texture = texture;
+    }
+
+    public void setInventory(ArrayList<String> inventory) {
+        this.inventory = inventory;
+    }
+
+    public String getLastMove() {
+        return lastMove;
+    }
+
+    public void setLastMove(String lastMove) {
+        this.lastMove = lastMove;
+    }
+
+    public boolean isOnIce() {
+        return onIce;
+    }
+
+    public void setOnIce(boolean onIce) {
+        this.onIce = onIce;
     }
 }
