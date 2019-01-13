@@ -55,17 +55,18 @@ public class PlayerControl extends Component {
         }
 
 
+        if(isOnIce()==true && !getInventory().contains("ICEBOOTS"))
         //Ice movement (constant while on ice)
-        if (getLastMove().equalsIgnoreCase("right") && isOnIce()==true){
+        if (getLastMove().equalsIgnoreCase("right")){
             entity.translateX(speed * tpf);
             setLastMove("right");
-        } else if (getLastMove().equalsIgnoreCase("left") && isOnIce()==true){
+        } else if (getLastMove().equalsIgnoreCase("left")){
             entity.translateX(-speed * tpf);
             setLastMove("left");
-        } else if (getLastMove().equalsIgnoreCase("up") && isOnIce() == true){
+        } else if (getLastMove().equalsIgnoreCase("up")){
             entity.translateY(-speed * tpf);
             setLastMove("up");
-        } else if (getLastMove().equalsIgnoreCase("down") && isOnIce() == true){
+        } else if (getLastMove().equalsIgnoreCase("down")){
             entity.translateY(speed * tpf);
             setLastMove("down");
         }

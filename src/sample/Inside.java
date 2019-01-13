@@ -14,6 +14,8 @@ import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.geometry.Point2D;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import sample.Control.PlayerControl;
 import sample.Factories.CollectiblesFactory;
@@ -23,6 +25,8 @@ import sample.Factories.PlayerEnemyFactory;
 
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static sample.EntityTypes.Type.*;
 
@@ -33,12 +37,12 @@ import static sample.EntityTypes.Type.*;
 
 public class Inside extends GameApplication {
 
+    //private datafields for main class (inside)
     private Entity player;
     private Entity enemyTest;
+    private Point2D playerPosition;
     private ArrayList<String> playerInventory;
     private AnimatedTexture texture;
-    private Point2D playerPosition;
-    private int points = 0;
     private ArrayList<String> levels = new ArrayList<String>(){{
         add("elements_test.json");
         add("testMap2000");}};
@@ -118,8 +122,27 @@ public class Inside extends GameApplication {
     }
 
     @Override
-    protected void initUI() {
+    protected void initGameVars(Map<String, Object> vars) {
+        super.initGameVars(vars);
 
+        vars.put("points", 0);
+
+    }
+
+    @Override
+    protected void initUI() {
+        super.initUI();
+
+        Text textScore1 = getUIFactory().newText("", Color.WHITE,50);
+
+        textScore1.setTranslateX(10);
+        textScore1.setTranslateY(50);
+
+
+
+        textScore1.textProperty().bind(getGameState().intProperty("points").asString());
+
+        getGameScene().addUINodes(textScore1);
     }
 
     //Collision handling (physics)
@@ -128,7 +151,10 @@ public class Inside extends GameApplication {
 
         playerInventory = player.getComponent(PlayerControl.class).getInventory();
 
+        //-------------------------------------------------------------------------------------------------------------
         //PLAYER-CHIP-WALL---------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
         //Collision handling for  player and chip
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, CHIP) {
 
@@ -138,7 +164,7 @@ public class Inside extends GameApplication {
 
                 player.getComponent(PlayerControl.class).addInventory(chip);
                 chip.removeFromWorld();
-                points +=10;
+                getGameState().increment("points", 10);
 
             }
         });
@@ -174,21 +200,34 @@ public class Inside extends GameApplication {
 
         });
 
-        //Collision handling for  player and chip
+
+        //-------------------------------------------------------------------------------------------------------------
+        //ICE AND ICE-CORNERS------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //Collision handling for  player and ice
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICE) {
 
             // order of types is the same as passed into the constructor
             @Override
             protected void onCollisionBegin(Entity player, Entity ice) {
 
-                player.getComponent(PlayerControl.class).setOnIce(true);
+                if(!playerInventory.contains("ICEBOOTS")) {
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
 
             }
 
             @Override
             protected void onCollision(Entity player, Entity ice) {
 
-                player.getComponent(PlayerControl.class).setOnIce(true);
+                if(!playerInventory.contains("ICEBOOTS")) {
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
 
             }
 
@@ -201,7 +240,256 @@ public class Inside extends GameApplication {
 
         });
 
+        //Collision handling for  player and iceCornerTR
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERTR) {
+
+            // order of types is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+
+                    System.out.println("TR-collision start " + player.getComponent(PlayerControl.class).getLastMove() );
+
+                    if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("up")){
+
+                        int playerY = (int) player.getCenter().getY();
+                        int icecornerY = (int) iceCorner.getCenter().getY();
+
+                        if(icecornerY == playerY
+                        ||icecornerY == playerY +1
+                        ||icecornerY == playerY-1) {
+                            player.getComponent(PlayerControl.class).getEntity().translateX(-player.getComponent(PlayerControl.class).getSpeed()*tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("left");
+                            System.out.println("center hit TR, last move : "+ player.getComponent(PlayerControl.class).getLastMove());
+                        }
+
+                    }
+                    else if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("right")){
+
+                        int playerX = (int) player.getCenter().getX();
+                        int icecornerX = (int) iceCorner.getCenter().getX();
+
+                        if(icecornerX == playerX
+                        ||icecornerX == playerX+1
+                        ||icecornerX == playerX-1){
+                            player.getComponent(PlayerControl.class).getEntity().translateY(player.getComponent(PlayerControl.class).getSpeed() * tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("down");
+                        }
+                    }
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity iceCorner) {
+
+                player.getComponent(PlayerControl.class).setOnIce(false);
+
+            }
+        });
+
+        //Collision handling for  player and iceCornerTL
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERTL) {
+
+            // order of types is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+
+                    if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("left")){
+
+                        int playerX = (int) player.getCenter().getX();
+                        int icecornerX = (int) iceCorner.getCenter().getX();
+
+                        if(icecornerX == playerX
+                        ||icecornerX == playerX+1
+                        || icecornerX == playerX-1){
+
+                            player.getComponent(PlayerControl.class).getEntity().translateY(player.getComponent(PlayerControl.class).getSpeed()*tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("down");
+                        }
+
+                    }
+                    else if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("up")){
+
+                        int playerY = (int) player.getCenter().getY();
+                        int icecornerY = (int) iceCorner.getCenter().getY();
+
+                        if(icecornerY == playerY
+                        ||icecornerY == playerY+1
+                        ||icecornerY == playerY-1){
+                            player.getComponent(PlayerControl.class).getEntity().translateX(player.getComponent(PlayerControl.class).getSpeed() * tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("right");
+                        }
+                    }
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity iceCorner) {
+
+                player.getComponent(PlayerControl.class).setOnIce(false);
+
+            }
+        });
+
+        //Collision handling for  player and iceCornerBR
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERBR) {
+
+            // order of types is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+
+                    if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("down")){
+
+                        int playerY = (int) player.getCenter().getY();
+                        int icecornerY = (int) iceCorner.getCenter().getY();
+
+                        if(icecornerY == playerY
+                        ||icecornerY == playerY+1
+                        ||icecornerY == playerY-1){
+                            player.getComponent(PlayerControl.class).getEntity().translateX(-player.getComponent(PlayerControl.class).getSpeed()*tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("left");
+                        }
+
+                    }
+                    else if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("right")){
+
+                        int playerX = (int) Math.ceil(player.getCenter().getX());
+                        int icecornerX = (int) Math.ceil(iceCorner.getCenter().getX());
+
+                        if(icecornerX == playerX
+                        ||icecornerX == playerX+1
+                        ||icecornerX == playerX-1){
+                            player.getComponent(PlayerControl.class).getEntity().translateY(-player.getComponent(PlayerControl.class).getSpeed() * tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("up");
+                        }
+                    }
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity iceCorner) {
+
+                player.getComponent(PlayerControl.class).setOnIce(false);
+
+            }
+        });
+
+        //Collision handling for  player and iceCornerTL
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERBL) {
+
+            // order of types is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity iceCorner) {
+
+                if(!playerInventory.contains("ICEBOOTS")){
+                    player.getComponent(PlayerControl.class).setOnIce(true);
+
+                    if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("left")){
+
+                        int playerX = (int) player.getCenter().getX();
+                        int icecornerX = (int) iceCorner.getCenter().getX();
+
+                        if(icecornerX == playerX
+                                ||icecornerX == playerX+1
+                                || icecornerX == playerX-1){
+
+                            player.getComponent(PlayerControl.class).getEntity().translateY(-player.getComponent(PlayerControl.class).getSpeed()*tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("up");
+                        }
+
+                    }
+                    else if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("down")){
+
+                        int playerY = (int) player.getCenter().getY();
+                        int icecornerY = (int) iceCorner.getCenter().getY();
+
+                        if(icecornerY == playerY
+                                ||icecornerY == playerY+1
+                                ||icecornerY == playerY-1){
+                            player.getComponent(PlayerControl.class).getEntity().translateX(player.getComponent(PlayerControl.class).getSpeed() * tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("right");
+                        }
+                    }
+                } else{
+                    player.getComponent(PlayerControl.class).setOnIce(false);
+                }
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity iceCorner) {
+
+                player.getComponent(PlayerControl.class).setOnIce(false);
+
+            }
+        });
+
+
+        //-------------------------------------------------------------------------------------------------------------
         //ENEMIES------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
         //Collistion handling for enemyTest and wall (move from side to side on x-axis)
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(ENEMYTEST,WALL) {
 
@@ -235,7 +523,29 @@ public class Inside extends GameApplication {
 
         });
 
+
+        //-------------------------------------------------------------------------------------------------------------
+        //BOOTS--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //Collision handling for  player and iceBoots
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICEBOOTS) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity iceBoots) {
+
+                player.getComponent(PlayerControl.class).addInventory(iceBoots);
+                iceBoots.removeFromWorld();
+
+            }
+        });
+
+
+        //-------------------------------------------------------------------------------------------------------------
         //DOORS--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
         //Collision handling for  player and redDoor
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, REDDOOR) {
 
@@ -245,7 +555,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity redDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                points++;
+                getGameState().increment("points", 1);
 
             }
 
@@ -288,7 +598,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity blueDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                points++;
+                getGameState().increment("points", 1);
 
             }
 
@@ -331,7 +641,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity greenDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                points++;
+                getGameState().increment("points", 1);
 
             }
 
@@ -374,7 +684,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity yellowDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                points++;
+                getGameState().increment("points", 1);
 
             }
 
@@ -408,7 +718,11 @@ public class Inside extends GameApplication {
 
         });
 
+
+        //-------------------------------------------------------------------------------------------------------------
         //KEYS---------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
         //Collision handling for player and redKey
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, REDKEY) {
 
@@ -460,7 +774,6 @@ public class Inside extends GameApplication {
 
             }
         });
-
 
     }
 
