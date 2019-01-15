@@ -1,4 +1,4 @@
-package sample.Factories;
+package sample.Control;
 
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.entity.component.Component;

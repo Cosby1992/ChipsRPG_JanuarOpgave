@@ -15,23 +15,16 @@ public class PlayerControl extends Component {
     private int speed = 100;
     private ArrayList<String> inventory = new ArrayList<String>();
     private boolean onIce = false;
+    private boolean inWater = false;
     private String lastMove = "up";
 
 
     private AnimatedTexture texture;
-    private AnimationChannel animIdleForward, animForward, animIdleRight, animRight,animIdleLeft, animLeft, animBackward, animIdleBackward;
+    private AnimationChannel animIdleForward;
 
     //Constructor
     public PlayerControl() {
         animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animIdleBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animIdleLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animIdleRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-
 
         texture = new AnimatedTexture(animIdleForward);
         System.out.println("playerControl");
@@ -48,14 +41,18 @@ public class PlayerControl extends Component {
     @Override
     public void onUpdate(double tpf) {
 
-        if(canMove){
+        if(canMove && !inWater && !onIce){
             speed = 100;
-        }else{
+        } else if(inWater && canMove && !onIce){
+            speed = 50;
+        } else if (onIce && canMove && !inWater){
+            speed = 200;
+        } else{
             speed = 0;
         }
 
 
-        if(isOnIce()==true && !getInventory().contains("ICEBOOTS"))
+        if(isOnIce() && !getInventory().contains("ICEBOOTS"))
         //Ice movement (constant while on ice)
         if (getLastMove().equalsIgnoreCase("right")){
             entity.translateX(speed * tpf);
@@ -103,10 +100,10 @@ public class PlayerControl extends Component {
 
     //player inventory as ArrayList
     public void addInventory(Entity collectableEntity){
-        inventory.add(collectableEntity.getType().toString());
+        getInventory().add(collectableEntity.getType().toString());
 
-        for (int i = 0; i < inventory.size(); i++) {
-            System.out.println(inventory.get(i));
+        for (int i = 0; i < getInventory().size(); i++) {
+            System.out.println(getInventory().get(i));
         }
 
     }
@@ -160,4 +157,22 @@ public class PlayerControl extends Component {
     public void setOnIce(boolean onIce) {
         this.onIce = onIce;
     }
+
+    public boolean isInWater() {
+        return inWater;
+    }
+
+    public void setInWater(boolean inWater) {
+        this.inWater = inWater;
+    }
+
+    public void playerInfo(){
+        System.out.println("player in water = " + isInWater()
+                + "player on ice = " + isOnIce()
+                + "player can move = " + isCanMove()
+                + "players last move = " + getLastMove()
+                + "inventory contains = " + getInventory().toString()
+                + "player speed = " + getSpeed());
+    }
+
 }
