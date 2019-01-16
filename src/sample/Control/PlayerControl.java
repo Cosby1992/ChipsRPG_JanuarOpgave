@@ -5,6 +5,8 @@ import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.extra.entity.components.HealthComponent;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
+import com.almasb.fxgl.texture.Texture;
+import javafx.scene.image.Image;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -17,7 +19,6 @@ public class PlayerControl extends Component {
     private boolean onIce = false;
     private boolean inWater = false;
     private String lastMove = "up";
-
 
     private AnimatedTexture texture;
     private AnimationChannel animIdleForward;
@@ -46,7 +47,7 @@ public class PlayerControl extends Component {
         } else if(inWater && canMove && !onIce){
             speed = 50;
         } else if (onIce && canMove && !inWater){
-            speed = 200;
+            speed = 185;
         } else{
             speed = 0;
         }

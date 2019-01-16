@@ -46,36 +46,17 @@ public class Inside extends GameApplication {
     private Point2D playerPosition;
     private ArrayList<String> playerInventory;
     private AnimatedTexture texture;
-    private ArrayList<String> levels = new ArrayList<String>(){{
+    private InGamePanel panel;
+
+
+    private  ArrayList<String> levels = new ArrayList<>(){{
         add("elements_test.json");
         add("testMap2000.json");}};
-    private InGamePanel panel;
-    int level = 0;
 
-    private void setIdleTexture(Input input){
-        AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
-        animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+    private int level = 0;
 
-
-        if(!input.isHeld(KeyCode.W)
-                &&!input.isHeld(KeyCode.A)
-                &&!input.isHeld(KeyCode.D)
-                &&!input.isHeld(KeyCode.K)){
-            String lastMove = playerFound.getComponent(PlayerControl.class).getLastMove();
-            switch (lastMove){
-                case "right": texture.loopAnimationChannel(animIdleRight); break;
-                case "left": texture.loopAnimationChannel(animIdleLeft); break;
-                case "up": texture.loopAnimationChannel(animIdleForward); break;
-                case "down": texture.loopAnimationChannel(animIdleBackward); break;
-            }
-        }
-    }
-
-    private String getLevel(int level){
-        if (level<=levels.size()) {
+    private String getLevelAsString(int level){
+        if (level<= levels.size() && level>=0) {
             this.level = level;
             return levels.get(level);
         }
@@ -84,6 +65,18 @@ public class Inside extends GameApplication {
             return levels.get(0);
         }
     }
+
+    private int getLevel(){
+        return this.level;
+    }
+
+    private void setLevel(int level){
+        this.level = level;
+    }
+
+
+
+
 
     //Window settings
     @Override
@@ -114,53 +107,8 @@ public class Inside extends GameApplication {
     @Override
     protected void initGame() { //setting up Entities in GameWorld
 
-        startLevel(level);
-/*
-        getGameWorld().addEntityFactory(new EnvironmentalFactory());
-        getGameWorld().addEntityFactory(new PlayerFactory());
-        getGameWorld().addEntityFactory(new CollectiblesFactory()); // adding data from tiledMap data (see class)
-        getGameWorld().addEntityFactory(new EnemyFactory());
-
-        getGameWorld().setLevelFromMap(getLevel(0)); // adding tiled map from json file (using tile data from PC Computer - Chips Challenge 2 - Everything (1).png)
-
-
-        //finding playerFound inside gameWorld
-        ArrayList<Entity> players = getGameWorld().getEntities();
-        for (Entity player1 : players) {
-            if (player1.isType(PLAYER)) {
-                setPlayerFound(player1);
-            }
-        }
-
-
-
-        playerPosition = new Point2D(playerFound.getX(), playerFound.getY());
-
-        ArrayList<Entity> enemyTestList = getGameWorld().getEntities();
-        for (Entity anEnemyTestList : enemyTestList) {
-            if (anEnemyTestList.isType(ENEMYTEST)) {
-                enemyTest = anEnemyTestList;
-            }
-        }
-
-
-
-        AnimationChannel introChannel = new AnimationChannel("playerBackwardAnimated",8,16,29,Duration.seconds(0.6),0,7);
-        IntroScene intro;
-        intro.
-
-        new AnimatedTexture(introChannel);
-
-
-        //adding camera
-        Viewport viewport = getGameScene().getViewport();
-
-        //zooming in
-        viewport.setZoom(2);
-
-        //place camera and set to follow playerFound
-        viewport.bindToEntity(getPlayerFound(),300,160);
-*/
+        startLevel(getLevel());
+        System.out.println("Level gameinit = " + getLevel());
 
         //adding scene background
         Image image = new Image("assets/textures/gameBackground.jpg");
@@ -187,6 +135,8 @@ public class Inside extends GameApplication {
         //chip's left
         vars.put("chipsLeft",numberOfChips);
 
+        vars.put("Level", getLevel());
+
     }
 
 
@@ -194,8 +144,8 @@ public class Inside extends GameApplication {
     @Override
     protected void initPhysics() {
 
-        setTexture(getPlayerFound().getComponent(PlayerControl.class).getTexture());
-        setPlayerInventory(getPlayerFound().getComponent(PlayerControl.class).getInventory());
+        setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
+        setPlayerInventory(getPlayer().getComponent(PlayerControl.class).getInventory());
 
         //-------------------------------------------------------------------------------------------------------------
         //PLAYER-CHIP-WALL---------------------------------------------------------------------------------------------
@@ -208,9 +158,11 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity chip) {
 
-                player.getComponent(PlayerControl.class).addInventory(chip);
+                getPlayerInventory().add(chip.getType().toString());
                 chip.removeFromWorld();
-                getGameState().increment("points", 10);
+                getGameState().increment("points", 25);
+
+                getAudioPlayer().playSound("Chip_Pickup.wav");
 
             }
         });
@@ -223,17 +175,28 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity wall) {
 
+
                 player.getComponent(PlayerControl.class).setCanMove(true);
+
+
+                Point2D point = wall.getCenter();
+                player.translateTowards(point, -50*tpf());
+
 
             }
 
             @Override
             protected void onCollision(Entity player, Entity wall) {
 
-                player.getComponent(PlayerControl.class).setCanMove(false);
+                if (player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
 
                 Point2D point = wall.getCenter();
-                player.translateTowards(point, -10*tpf());
+                player.translateTowards(point, -100*tpf());
+
+
+
 
             }
 
@@ -241,6 +204,43 @@ public class Inside extends GameApplication {
             protected void onCollisionEnd(Entity player, Entity wall) {
 
                 //playerFound.getComponent(PlayerControl.class).setCanMove(true);
+
+            }
+
+        });
+
+        //Collision handling for  playerFound and water
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ENDZONE) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity endZone) {
+
+                if (getGameWorld().getEntitiesByType(CHIP).size()==0) {
+                    //playerFound.getComponent(PlayerControl.class).setInWater(true);
+                    getGameState().increment("points", 250);
+                    setLevel(getLevel()+1);
+                    System.out.println(getLevels().size() + "  " + getLevel());
+                    if (getLevels().size()>getLevel()) {
+                        startLevel(getLevel());
+                    } else {
+                        System.out.println("congratulations.. You won the game! ");
+                    }
+                } else {
+                    System.out.println("You have not collected all the chips in this level!!");
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity water) {
+
+
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity water) {
+
 
             }
 
@@ -258,7 +258,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity ice) {
 
-                if(!playerInventory.contains("ICEBOOTS")) {
+                if(!getPlayerInventory().contains("ICEBOOTS")) {
                     player.getComponent(PlayerControl.class).setOnIce(true);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
@@ -269,7 +269,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity player, Entity ice) {
 
-                if(!playerInventory.contains("ICEBOOTS")) {
+                if(!getPlayerInventory().contains("ICEBOOTS")) {
                     player.getComponent(PlayerControl.class).setOnIce(true);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
@@ -294,7 +294,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
@@ -304,7 +304,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
 
                     if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("up")){
@@ -351,7 +351,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
@@ -361,7 +361,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
 
                     if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("left")){
@@ -408,7 +408,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
@@ -418,7 +418,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity player, Entity iceCorner) {
 
-                if(!playerInventory.contains("ICEBOOTS")){
+                if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
 
                     if (player.getComponent(PlayerControl.class).getLastMove().equalsIgnoreCase("down")){
@@ -518,29 +518,40 @@ public class Inside extends GameApplication {
         //WATER--------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
-        //Collision handling for  playerFound and ice
+        //Collision handling for  playerFound and water
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WATER) {
 
             // order of types is the same as passed into the constructor
             @Override
             protected void onCollisionBegin(Entity player, Entity water) {
 
-                if (!playerInventory.contains("WATERBOOTS")) {
+                if (!getPlayerInventory().contains("WATERBOOTS")) {
                     //playerFound.getComponent(PlayerControl.class).setInWater(true);
-                    startLevel(level);
+                    getGameState().increment("points", -50);
+                    getAudioPlayer().playSound("Water_Hit.wav");
+                    startLevel(getLevel());
+                } else {
+                    getPlayer().getComponent(PlayerControl.class).setInWater(true);
+                    getAudioPlayer().playSound("Water_Hit.wav");
                 }
             }
+
+            private int waterSoundIncrement = 0;
 
             @Override
             protected void onCollision(Entity player, Entity water) {
 
+                waterSoundIncrement++;
+                if(waterSoundIncrement %600==0){
+                    getAudioPlayer().playSound("Water_Hit.wav");
+                }
 
             }
 
             @Override
             protected void onCollisionEnd(Entity player, Entity water) {
 
-
+                waterSoundIncrement =0;
             }
 
         });
@@ -550,7 +561,7 @@ public class Inside extends GameApplication {
         //ENEMIES------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
-        //Collistion handling for enemyTest and wall (move from side to side on x-axis)
+        //Collision handling for enemyTest and wall (move from side to side on x-axis)
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(ENEMYTEST,WALL) {
 
             @Override
@@ -577,7 +588,10 @@ public class Inside extends GameApplication {
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(ENEMYTEST,PLAYER) {
             @Override
             protected void onCollisionBegin(Entity enemyTest, Entity player){
-                playerInventory.clear();
+
+                        getGameState().increment("points", -50);
+                        getAudioPlayer().playSound("Death_By_Enemy.wav");
+                        startLevel(getLevel());
 
             }
 
@@ -595,7 +609,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity iceBoots) {
 
-                player.getComponent(PlayerControl.class).addInventory(iceBoots);
+                getPlayerInventory().add(iceBoots.getType().toString());
                 iceBoots.removeFromWorld();
 
             }
@@ -615,19 +629,25 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity redDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                getGameState().increment("points", 1);
+
+                if(getPlayerInventory().contains("REDKEY")){
+                    getAudioPlayer().playSound("Open_Door.wav");
+                } else {
+                    getAudioPlayer().playSound("Locked_Door.wav");
+                }
 
             }
 
             @Override
             protected void onCollision(Entity player, Entity redDoor) {
 
-                if(playerInventory.contains("REDKEY")){
+                if(getPlayerInventory().contains("REDKEY")){
+                    getGameState().increment("points", 5);
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     redDoor.removeFromWorld();
-                    playerInventory.remove("REDKEY");
+                    getPlayerInventory().remove("REDKEY");
 
-                    for (String aPlayerInventory : playerInventory) {
+                    for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
 
@@ -658,19 +678,25 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity blueDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                getGameState().increment("points", 1);
+
+                if(getPlayerInventory().contains("BLUEKEY")){
+                    getAudioPlayer().playSound("Open_Door.wav");
+                } else {
+                    getAudioPlayer().playSound("Locked_Door.wav");
+                }
 
             }
 
             @Override
             protected void onCollision(Entity player, Entity blueDoor) {
 
-                if(playerInventory.contains("BLUEKEY")){
+                if(getPlayerInventory().contains("BLUEKEY")){
+                    getGameState().increment("points", 5);
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     blueDoor.removeFromWorld();
-                    playerInventory.remove("BLUEKEY");
+                    getPlayerInventory().remove("BLUEKEY");
 
-                    for (String aPlayerInventory : playerInventory) {
+                    for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
 
@@ -701,19 +727,25 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity greenDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                getGameState().increment("points", 1);
+
+                if(getPlayerInventory().contains("GREENKEY")){
+                    getAudioPlayer().playSound("Open_Door.wav");
+                } else {
+                    getAudioPlayer().playSound("Locked_Door.wav");
+                }
 
             }
 
             @Override
             protected void onCollision(Entity player, Entity greenDoor) {
 
-                if(playerInventory.contains("GREENKEY")){
+                if(getPlayerInventory().contains("GREENKEY")){
+                    getGameState().increment("points", 5);
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     greenDoor.removeFromWorld();
-                    playerInventory.remove("GREENKEY");
+                    getPlayerInventory().remove("GREENKEY");
 
-                    for (String aPlayerInventory : playerInventory) {
+                    for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
 
@@ -744,7 +776,12 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity yellowDoor) {
 
                 player.getComponent(PlayerControl.class).setCanMove(true);
-                System.out.println(getPlayerInventory());
+
+                if(getPlayerInventory().contains("YELLOWKEY")){
+                    getAudioPlayer().playSound("Open_Door.wav");
+                } else {
+                    getAudioPlayer().playSound("Locked_Door.wav");
+                }
 
             }
 
@@ -752,7 +789,7 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity yellowDoor) {
 
                 if(getPlayerInventory().contains("YELLOWKEY")){
-                    getGameState().increment("points", 1);
+                    getGameState().increment("points", 5);
 
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     yellowDoor.removeFromWorld();
@@ -793,6 +830,9 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity redKey) {
 
                 getPlayerInventory().add("REDKEY");
+
+                getAudioPlayer().playSound("Key_Pickup.wav");
+
                 redKey.removeFromWorld();
 
             }
@@ -806,6 +846,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity blueKey) {
 
                 getPlayerInventory().add("BLUEKEY");
+                getAudioPlayer().playSound("Key_Pickup.wav");
                 blueKey.removeFromWorld();
 
             }
@@ -819,6 +860,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity greenKey) {
 
                 getPlayerInventory().add("GREENKEY");
+                getAudioPlayer().playSound("Key_Pickup.wav");
                 greenKey.removeFromWorld();
 
             }
@@ -830,9 +872,10 @@ public class Inside extends GameApplication {
             // order of types is the same as passed into the constructor
             @Override
             protected void onCollisionBegin(Entity player, Entity yellowKey) {
-
+                //Collision handling for  playerFound and water
+                getPlayerInventory().add("WATERBOOTS");
                 getPlayerInventory().add("YELLOWKEY");
-                System.out.println(getPlayerInventory());
+                getAudioPlayer().playSound("Key_Pickup.wav");
                 yellowKey.removeFromWorld();
 
             }
@@ -865,11 +908,11 @@ public class Inside extends GameApplication {
             protected void onActionBegin(){
                 super.onActionBegin();
 
-                setTexture(getPlayerFound().getComponent(PlayerControl.class).getTexture());
+                setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
                 getTexture().loopAnimationChannel(animForward);
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()==false) {
-                    getPlayerFound().getComponent(PlayerControl.class).setCanMove(true);
+                if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
 
             }
@@ -879,8 +922,8 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()) {
-                    getPlayerFound().getComponent(PlayerControl.class).moveUp(tpf());
+                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).moveUp(tpf());
                 }
 
             }
@@ -899,11 +942,11 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionBegin() {
                 super.onActionBegin();
-                setTexture(getPlayerFound().getComponent(PlayerControl.class).getTexture());
+                setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
                 getTexture().loopAnimationChannel(animBackward);
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()==false) {
-                    getPlayerFound().getComponent(PlayerControl.class).setCanMove(true);
+                if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
             }
 
@@ -911,8 +954,8 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove() == true) {
-                    getPlayerFound().getComponent(PlayerControl.class).moveDown(tpf());
+                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).moveDown(tpf());
                 }
             }
 
@@ -929,11 +972,11 @@ public class Inside extends GameApplication {
             protected void onActionBegin(){
                 super.onActionBegin();
 
-                setTexture(getPlayerFound().getComponent(PlayerControl.class).getTexture());
+                setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
                getTexture().loopAnimationChannel(animLeft);
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove() == false) {
-                    getPlayerFound().getComponent(PlayerControl.class).setCanMove(true);
+                if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
             }
 
@@ -941,8 +984,8 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()==true) {
-                    getPlayerFound().getComponent(PlayerControl.class).moveLeft(tpf());
+                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).moveLeft(tpf());
                 }
 
             }
@@ -962,12 +1005,12 @@ public class Inside extends GameApplication {
             protected void onActionBegin() {
                 super.onActionBegin();
 
-                setTexture(getPlayerFound().getComponent(PlayerControl.class).getTexture());
+                setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
                 texture.loopAnimationChannel(animRight);
 
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()==false) {
-                    getPlayerFound().getComponent(PlayerControl.class).setCanMove(true);
+                if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
             }
 
@@ -975,8 +1018,8 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayerFound().getComponent(PlayerControl.class).isCanMove()==true) {
-                    getPlayerFound().getComponent(PlayerControl.class).moveRight(tpf());
+                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                    getPlayer().getComponent(PlayerControl.class).moveRight(tpf());
                 }
             }
 
@@ -1032,16 +1075,16 @@ public class Inside extends GameApplication {
         Text chipsGameVar = getUIFactory().newText("", Color.WHITE,15);
 
         points.setTranslateX(10);
-        points.setTranslateY(20);
+        points.setTranslateY(685);
 
         chipsLeft.setTranslateX(10);
-        chipsLeft.setTranslateY(40);
+        chipsLeft.setTranslateY(705);
 
         pointsGameVar.setTranslateX(100);
-        pointsGameVar.setTranslateY(20);
+        pointsGameVar.setTranslateY(685);
 
         chipsGameVar.setTranslateX(100);
-        chipsGameVar.setTranslateY(40);
+        chipsGameVar.setTranslateY(705);
 
         pointsGameVar.textProperty().bind(getGameState().intProperty("points").asString());
         chipsGameVar.textProperty().bind(getGameState().intProperty("chipsLeft").asString());
@@ -1078,18 +1121,18 @@ public class Inside extends GameApplication {
         getGameWorld().addEntityFactory(new CollectiblesFactory()); // adding data from tiledMap data (see class)
         getGameWorld().addEntityFactory(new EnemyFactory());
         System.out.println("here ?!?!?!?!?!");
-        getGameWorld().setLevelFromMap(getLevel(level));
+        getGameWorld().setLevelFromMap(getLevelAsString(level));
         System.out.println("MAYBE HERE?!?!?!");
         //finding playerFound inside gameWorld
 
         ArrayList<Entity> players = getGameWorld().getEntities();
         for (Entity player1 : players) {
             if (player1.isType(PLAYER)) {
-                setPlayerFound(player1);
+                setPlayer(player1);
             }
         }
 
-        setPlayerPosition(new Point2D(getPlayerFound().getX(), getPlayerFound().getY()));
+        setPlayerPosition(new Point2D(getPlayer().getX(), getPlayer().getY()));
 
         ArrayList<Entity> enemyTestList = getGameWorld().getEntities();
         for (Entity anEnemyTestList : enemyTestList) {
@@ -1102,22 +1145,25 @@ public class Inside extends GameApplication {
         Viewport viewport = getGameScene().getViewport();
 
         //zooming in
-        viewport.setZoom(2);
+        viewport.setZoom(2.2);
 
         //place camera and set to follow playerFound
-        viewport.bindToEntity(getPlayerFound(),300,160);
+        viewport.bindToEntity(getPlayer(),300,160);
 
 
-        getPlayerFound().getComponent(PlayerControl.class).playerInfo();
+        getPlayer().getComponent(PlayerControl.class).playerInfo();
+
+
+        setPlayerInventory(new ArrayList<>());
 
 
     }
 
-    public Entity getPlayerFound() {
+    public Entity getPlayer() {
         return playerFound;
     }
 
-    public void setPlayerFound(Entity playerFound) {
+    public void setPlayer(Entity playerFound) {
         this.playerFound = playerFound;
     }
 
@@ -1127,6 +1173,28 @@ public class Inside extends GameApplication {
 
     public void setTexture(AnimatedTexture texture) {
         this.texture = texture;
+    }
+
+    private void setIdleTexture(Input input){
+        AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
+        animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animIdleBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animIdleLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animIdleRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+
+
+        if(!input.isHeld(KeyCode.W)
+                &&!input.isHeld(KeyCode.A)
+                &&!input.isHeld(KeyCode.D)
+                &&!input.isHeld(KeyCode.K)){
+            String lastMove = getPlayer().getComponent(PlayerControl.class).getLastMove();
+            switch (lastMove){
+                case "right": getTexture().loopAnimationChannel(animIdleRight); break;
+                case "left": getTexture().loopAnimationChannel(animIdleLeft); break;
+                case "up": getTexture().loopAnimationChannel(animIdleForward); break;
+                case "down": getTexture().loopAnimationChannel(animIdleBackward); break;
+            }
+        }
     }
 
     public ArrayList<String> getPlayerInventory() {
@@ -1145,6 +1213,13 @@ public class Inside extends GameApplication {
         this.playerPosition = playerPosition;
     }
 
+    public ArrayList<String> getLevels() {
+        return levels;
+    }
+
+    public void setLevels(ArrayList<String> levels) {
+        this.levels = levels;
+    }
 }
 
 
