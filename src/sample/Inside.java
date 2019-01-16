@@ -9,8 +9,10 @@ import com.almasb.fxgl.scene.Viewport;
 import com.almasb.fxgl.settings.GameSettings;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
+import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
+import javafx.scene.Node;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
@@ -102,13 +104,16 @@ public class Inside extends GameApplication {
 
     }
 
-
     //Importing factories, maps (TiledMap), creating camera, and general game settings
     @Override
     protected void initGame() { //setting up Entities in GameWorld
 
         startLevel(getLevel());
         System.out.println("Level gameinit = " + getLevel());
+
+        getGameState().intProperty("level").setValue(1);
+        getGameState().intProperty("deaths").setValue(0);
+
 
         //adding scene background
         Image image = new Image("assets/textures/gameBackground.jpg");
@@ -118,27 +123,9 @@ public class Inside extends GameApplication {
 
 
 
-    }
 
-
-    //Game variables like points and chips
-    @Override
-    protected void initGameVars(Map<String, Object> vars) {
-        super.initGameVars(vars);
-
-        List<Entity> chips = getGameWorld().getEntitiesByType(CHIP);
-        int numberOfChips = chips.size();
-
-        //point game variable
-        vars.put("points",0);
-
-        //chip's left
-        vars.put("chipsLeft",numberOfChips);
-
-        vars.put("Level", getLevel());
 
     }
-
 
     //Collision handling (physics)
     @Override
@@ -161,6 +148,7 @@ public class Inside extends GameApplication {
                 getPlayerInventory().add(chip.getType().toString());
                 chip.removeFromWorld();
                 getGameState().increment("points", 25);
+                getGameState().increment("chipsLeft", -1);
 
                 getAudioPlayer().playSound("Chip_Pickup.wav");
 
@@ -528,10 +516,11 @@ public class Inside extends GameApplication {
                 if (!getPlayerInventory().contains("WATERBOOTS")) {
                     //playerFound.getComponent(PlayerControl.class).setInWater(true);
                     getGameState().increment("points", -50);
+                    getGameState().increment("deaths", 1);
                     getAudioPlayer().playSound("Water_Hit.wav");
                     startLevel(getLevel());
                 } else {
-                    getPlayer().getComponent(PlayerControl.class).setInWater(true);
+                    player.getComponent(PlayerControl.class).setInWater(true);
                     getAudioPlayer().playSound("Water_Hit.wav");
                 }
             }
@@ -540,6 +529,10 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity water) {
+
+                if (!player.getComponent(PlayerControl.class).isInWater()){
+                    player.getComponent(PlayerControl.class).setInWater(true);
+                }
 
                 waterSoundIncrement++;
                 if(waterSoundIncrement %600==0){
@@ -551,7 +544,49 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionEnd(Entity player, Entity water) {
 
+                player.getComponent(PlayerControl.class).setInWater(false);
                 waterSoundIncrement =0;
+            }
+
+        });
+
+        //-------------------------------------------------------------------------------------------------------------
+        //WATER--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //Collision handling for  playerFound and water
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, FIRE) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity fire) {
+
+                if (!getPlayerInventory().contains("FIREBOOTS")) {
+                    //playerFound.getComponent(PlayerControl.class).setInWater(true);
+                    getGameState().increment("points", -50);
+                    getGameState().increment("deaths", 1);
+                    getAudioPlayer().playSound("Fire_2.wav");
+                    startLevel(getLevel());
+                } else {
+                    getAudioPlayer().playSound("Fire_2.wav");
+                }
+            }
+
+            private int fireSoundIncrement = 0;
+
+            @Override
+            protected void onCollision(Entity player, Entity fire) {
+                fireSoundIncrement++;
+
+                if (fireSoundIncrement%400==0){
+                    getAudioPlayer().playSound("Fire_2.wav");
+                }
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity water) {
+
+
             }
 
         });
@@ -611,6 +646,23 @@ public class Inside extends GameApplication {
 
                 getPlayerInventory().add(iceBoots.getType().toString());
                 iceBoots.removeFromWorld();
+
+            }
+        });
+
+        //-------------------------------------------------------------------------------------------------------------
+        //BOOTS--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //Collision handling for  playerFound and iceBoots
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, FIREBOOTS) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity fireBoots) {
+
+                getPlayerInventory().add(fireBoots.getType().toString());
+                fireBoots.removeFromWorld();
 
             }
         });
@@ -883,7 +935,6 @@ public class Inside extends GameApplication {
 
     }
 
-
     //input handling
     @Override
     protected void initInput() {
@@ -1048,13 +1099,33 @@ public class Inside extends GameApplication {
 
     }
 
+    //Game variables like points and chips
+    @Override
+    protected void initGameVars(Map<String, Object> vars) {
+        super.initGameVars(vars);
+
+        List<Entity> chips = getGameWorld().getEntitiesByType(CHIP);
+        int numberOfChips = chips.size();
+
+        //point game variable
+        vars.put("points",0);
+
+        //chip's left
+        vars.put("chipsLeft",numberOfChips);
+
+        vars.put("level", 0);
+
+        vars.put("deaths", 0);
+
+    }
 
     //Designing and implementing UI
     @Override
     protected void initUI() {
         super.initUI();
         // UI CONTAINER -----------------------------------------------------------------------------------------------
-        Rectangle uiContainer = new Rectangle(1280,50, Color.BLACK);
+        Rectangle uiContainer = new Rectangle(1274,50, Color.BLACK);
+        uiContainer.setTranslateX(3);
 
         uiContainer.setTranslateY(720-53);
 
@@ -1068,27 +1139,58 @@ public class Inside extends GameApplication {
         getGameScene().addUINode(uiContainer);
 
 
-        // TEXT TOP LEFT CORNER (POINTS + CHIPS LEFT) -----------------------------------------------------------------
+        // TEXT BUTTOM LEFT CORNER (POINTS + CHIPS LEFT) -----------------------------------------------------------------
         Text points = getUIFactory().newText("Points",Color.WHITE, 15);
         Text chipsLeft = getUIFactory().newText("Chips Left",Color.WHITE, 15);
         Text pointsGameVar = getUIFactory().newText("", Color.WHITE,15);
         Text chipsGameVar = getUIFactory().newText("", Color.WHITE,15);
 
-        points.setTranslateX(10);
+        Text levelGameVar = getUIFactory().newText("", Color.WHITE,15);
+        levelGameVar.setTranslateX(1235);
+        levelGameVar.setTranslateY(705);
+
+        Text level = getUIFactory().newText("Level ", Color.WHITE, 15);
+        level.setTranslateX(1170);
+        level.setTranslateY(705);
+
+        Text deaths = getUIFactory().newText("Deaths ", Color.WHITE, 15);
+        deaths.setTranslateX(1160);
+        deaths.setTranslateY(685);
+
+        Text deathsGameVar = getUIFactory().newText("", Color.WHITE, 15);
+        deathsGameVar.setTranslateX(1235);
+        deathsGameVar.setTranslateY(685);
+
+
+        points.setTranslateX(43);
         points.setTranslateY(685);
 
-        chipsLeft.setTranslateX(10);
+        chipsLeft.setTranslateX(15);
         chipsLeft.setTranslateY(705);
 
-        pointsGameVar.setTranslateX(100);
+        pointsGameVar.setTranslateX(145);
         pointsGameVar.setTranslateY(685);
 
-        chipsGameVar.setTranslateX(100);
+        chipsGameVar.setTranslateX(145);
         chipsGameVar.setTranslateY(705);
 
+        levelGameVar.textProperty().bind(getGameState().intProperty("level").asString());
         pointsGameVar.textProperty().bind(getGameState().intProperty("points").asString());
         chipsGameVar.textProperty().bind(getGameState().intProperty("chipsLeft").asString());
-        getGameScene().addUINodes(points, chipsLeft, pointsGameVar, chipsGameVar);
+        deathsGameVar.textProperty().bind(getGameState().intProperty("deaths").asString());
+
+        /*
+        Texture redkey = new Texture(new Image("assets/textures/redKey.png"));
+        redkey.setTranslateX(500);
+        redkey.setTranslateY(500);
+
+        Texture yellowkey = new Texture(new Image("assets/textures/yellowKey.png"));
+        yellowkey.setTranslateX(500);
+        yellowkey.setTranslateY(600);
+*/
+
+
+        getGameScene().addUINodes(points, chipsLeft, level, deaths, pointsGameVar, chipsGameVar, levelGameVar, deathsGameVar);
 
 
 //Adding tab menu
@@ -1125,12 +1227,16 @@ public class Inside extends GameApplication {
         System.out.println("MAYBE HERE?!?!?!");
         //finding playerFound inside gameWorld
 
-        ArrayList<Entity> players = getGameWorld().getEntities();
-        for (Entity player1 : players) {
-            if (player1.isType(PLAYER)) {
-                setPlayer(player1);
+        ArrayList<Entity> entities = getGameWorld().getEntities();
+        for (Entity entity : entities) {
+            if (entity.isType(PLAYER)) {
+                setPlayer(entity);
+            } else if(entity.isType(CHIP)){
+                getGameState().increment("chipsLeft", 1);
             }
         }
+
+        getGameState().increment("level", 1);
 
         setPlayerPosition(new Point2D(getPlayer().getX(), getPlayer().getY()));
 

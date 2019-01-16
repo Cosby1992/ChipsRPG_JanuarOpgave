@@ -7,6 +7,7 @@ import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import javafx.util.Duration;
 import sample.Control.PlayerControl;
+import sample.Inside;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
 import static sample.EntityTypes.Type.*;
