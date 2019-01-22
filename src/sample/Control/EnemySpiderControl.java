@@ -1,14 +1,15 @@
 package sample.Control;
 
-import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.entity.component.Component;
+import com.almasb.fxgl.texture.AnimatedTexture;
+import com.almasb.fxgl.texture.AnimationChannel;
+import javafx.util.Duration;
 
-public class EnemyControl extends Component {
+public class EnemySpiderControl extends Component {
     private int speed = 100;
-    private int damage = 10;
     private boolean colliding = false;
 
-    public EnemyControl(){
+    public EnemySpiderControl(){
 
     }
 
@@ -16,9 +17,15 @@ public class EnemyControl extends Component {
     public void onAdded() {
         super.onAdded();
 
+        AnimationChannel moveX = new AnimationChannel("EnemySpider.png",4,27,27, Duration.seconds(0.2),0,3);
+
+        AnimatedTexture moveXtexture = new AnimatedTexture(moveX);
+
+        moveXtexture.loopAnimationChannel(moveX);
+
+        getEntity().setViewWithBBox(moveXtexture);
+
         entity.translateX(-1);
-
-
     }
 
     @Override
@@ -32,8 +39,11 @@ public class EnemyControl extends Component {
     public void moveOppisite(double tpf){
         if(isColliding()==true){
             if(getSpeed()==100){
+                getEntity().setScaleX(-1);
+
                 setSpeed(-100);
             } else {
+                getEntity().setScaleX(1);
                 setSpeed(100);
             }
         }
@@ -49,13 +59,6 @@ public class EnemyControl extends Component {
         this.speed = speed;
     }
 
-    public int getDamage() {
-        return damage;
-    }
-
-    public void setDamage(int damage) {
-        this.damage = damage;
-    }
 
     public boolean isColliding() {
         return colliding;

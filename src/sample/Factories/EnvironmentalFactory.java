@@ -9,6 +9,7 @@ import javafx.util.Duration;
 import static com.almasb.fxgl.app.DSLKt.texture;
 import static sample.EntityTypes.Type.*;
 
+
 public class EnvironmentalFactory implements EntityFactory {
 
     @Spawns("wall")

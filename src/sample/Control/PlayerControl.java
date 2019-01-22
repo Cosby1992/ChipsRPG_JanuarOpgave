@@ -2,11 +2,8 @@ package sample.Control;
 
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
-import com.almasb.fxgl.extra.entity.components.HealthComponent;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
-import com.almasb.fxgl.texture.Texture;
-import javafx.scene.image.Image;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -19,21 +16,37 @@ public class PlayerControl extends Component {
     private boolean onIce = false;
     private boolean inWater = false;
     private String lastMove = "up";
+    private boolean wallHit = false;
 
     private AnimatedTexture texture;
     private AnimationChannel animIdleForward;
+    private AnimationChannel animForward, animBackward, animLeft, animRight, inWaterUp, inWaterDown, inWaterLeft, inWaterRight;
 
     //Constructor
     public PlayerControl() {
-        animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        // initializing AnimationChannels to use with walking and swimming
+
+        animForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
+        animBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
+        animLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
+        animRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
+
+        inWaterUp = new AnimationChannel("inWaterUp.png",2,18,19,Duration.seconds(0.5),0,1);
+        inWaterDown = new AnimationChannel("inWaterDown.png",2,18,19,Duration.seconds(0.5),0,1);
+        inWaterLeft = new AnimationChannel("inWaterLeft.png",2,18,19,Duration.seconds(0.5),0,1);
+        inWaterRight = new AnimationChannel("inWaterRight.png",2,18,19,Duration.seconds(0.5),0,1);
+
+
+        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
 
         texture = new AnimatedTexture(animIdleForward);
+
         System.out.println("playerControl");
     }
 
     @Override
     public void onAdded() {
-        entity.setView(texture);
+        entity.setViewWithBBox(texture);
 
         System.out.println("on added");
 
@@ -42,14 +55,15 @@ public class PlayerControl extends Component {
     @Override
     public void onUpdate(double tpf) {
 
-        if(canMove && !inWater && !onIce){
-            speed = 100;
-        } else if(inWater && canMove && !onIce){
-            speed = 50;
+        if(isCanMove() && !isInWater() && !isOnIce() && !isWallHit()){
+            setSpeed(100);
+        } else if(isInWater() && isCanMove() && !isOnIce()){
+            setSpeed(50);
         } else if (onIce && canMove && !inWater){
-            speed = 185;
+            setSpeed(185);
         } else{
-            speed = 0;
+            setSpeed(100);
+            setCanMove(true);
         }
 
 
@@ -69,11 +83,19 @@ public class PlayerControl extends Component {
             setLastMove("down");
         }
 
+
+
     }
 
     public void moveRight(double tpf) {
         if (!isOnIce()) {
             entity.translateX(speed * tpf);
+            if (isInWater() && getTexture().getAnimationChannel() != inWaterRight){
+                getTexture().loopAnimationChannel(inWaterRight);
+            } else if (!isInWater() && getTexture().getAnimationChannel() != animRight) {
+                getTexture().loopAnimationChannel(animRight);
+            }
+
             setLastMove("right");
         }
     }
@@ -81,6 +103,11 @@ public class PlayerControl extends Component {
     public void moveLeft(double tpf) {
         if(!isOnIce()) {
             entity.translateX(-speed * tpf);
+            if (isInWater() && getTexture().getAnimationChannel() != inWaterLeft){
+                getTexture().loopAnimationChannel(inWaterLeft);
+            } else if (!isInWater() && getTexture().getAnimationChannel() != animLeft) {
+                getTexture().loopAnimationChannel(animLeft);
+            }
             setLastMove("left");
         }
     }
@@ -88,6 +115,11 @@ public class PlayerControl extends Component {
     public void moveUp(double tpf) {
         if(!isOnIce()) {
             entity.translateY(-speed * tpf);
+            if (isInWater() && getTexture().getAnimationChannel() != inWaterUp){
+                getTexture().loopAnimationChannel(inWaterUp);
+            } else if (!isInWater() && getTexture().getAnimationChannel() != animForward){
+                getTexture().loopAnimationChannel(animForward);
+            }
             setLastMove("up");
         }
     }
@@ -95,8 +127,15 @@ public class PlayerControl extends Component {
     public void moveDown(double tpf){
         if(!isOnIce()){
         entity.translateY(speed * tpf);
+            if (isInWater() && getTexture().getAnimationChannel() != inWaterDown){
+                getTexture().loopAnimationChannel(inWaterDown);
+            } else if (!isInWater() && getTexture().getAnimationChannel() != animBackward){
+                getTexture().loopAnimationChannel(animBackward);
+            }
         setLastMove("down");
         }
+
+
     }
 
     //player inventory as ArrayList
@@ -165,6 +204,14 @@ public class PlayerControl extends Component {
 
     public void setInWater(boolean inWater) {
         this.inWater = inWater;
+    }
+
+    public boolean isWallHit() {
+        return wallHit;
+    }
+
+    public void setWallHit(boolean wallHit) {
+        this.wallHit = wallHit;
     }
 
     public void playerInfo(){

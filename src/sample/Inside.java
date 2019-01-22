@@ -12,33 +12,32 @@ import com.almasb.fxgl.texture.AnimationChannel;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
-import javafx.scene.Node;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 import sample.Control.PlayerControl;
 import sample.Factories.CollectiblesFactory;
-import sample.Control.EnemyControl;
+import sample.Control.EnemySpiderControl;
 import sample.Factories.EnvironmentalFactory;
 import sample.Factories.EnemyFactory;
 import sample.Factories.PlayerFactory;
 
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.almasb.fxgl.app.DSLKt.spawn;
 import static sample.EntityTypes.Type.*;
 
 //Player texture size 16*29 px.
 //Animated texture size 128*29 px. (frames = 8)
 
-//Inside class
+//new Animated texture size 120*26 px (frames = 8) frame size: 15*26
+
+
+
+//"Inside" class
 
 public class Inside extends GameApplication {
 
@@ -53,7 +52,8 @@ public class Inside extends GameApplication {
 
     private  ArrayList<String> levels = new ArrayList<>(){{
         add("elements_test.json");
-        add("testMap2000.json");}};
+        add("testMap2000.json");
+        add("level3.json");}};
 
     private int level = 0;
 
@@ -77,9 +77,6 @@ public class Inside extends GameApplication {
     }
 
 
-
-
-
     //Window settings
     @Override
     protected void initSettings(GameSettings settings) {
@@ -90,12 +87,11 @@ public class Inside extends GameApplication {
 
         settings.setFullScreenAllowed(true);
 
-
         //Enabling Menu
-       // settings.setMenuEnabled(true);
+        settings.setMenuEnabled(true);
 
         //Setting menu keybind
-       // settings.setMenuKey(KeyCode.ESCAPE);
+        settings.setMenuKey(KeyCode.ESCAPE);
 
         settings.setAppIcon("chip.png");
 
@@ -105,6 +101,7 @@ public class Inside extends GameApplication {
     }
 
     //Importing factories, maps (TiledMap), creating camera, and general game settings
+    //Invoking startLevel();
     @Override
     protected void initGame() { //setting up Entities in GameWorld
 
@@ -115,15 +112,12 @@ public class Inside extends GameApplication {
         getGameState().intProperty("deaths").setValue(0);
 
 
+        //20*70 og 15*70
         //adding scene background
-        Image image = new Image("assets/textures/gameBackground.jpg");
+        //Image image = new Image("assets/textures/gameBackground.jpg");
 
-        getGameScene().setBackgroundRepeat(image);
-
-
-
-
-
+        //getGameScene().setBackgroundRepeat(image);
+        getGameScene().setBackgroundRepeat("gameBackground.jpg");
 
     }
 
@@ -164,8 +158,9 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity wall) {
 
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
-
+                if(player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
 
                 Point2D point = wall.getCenter();
                 player.translateTowards(point, -50*tpf());
@@ -182,8 +177,6 @@ public class Inside extends GameApplication {
 
                 Point2D point = wall.getCenter();
                 player.translateTowards(point, -100*tpf());
-
-
 
 
             }
@@ -206,30 +199,23 @@ public class Inside extends GameApplication {
 
                 if (getGameWorld().getEntitiesByType(CHIP).size()==0) {
                     //playerFound.getComponent(PlayerControl.class).setInWater(true);
-                    getGameState().increment("points", 250);
                     setLevel(getLevel()+1);
                     System.out.println(getLevels().size() + "  " + getLevel());
                     if (getLevels().size()>getLevel()) {
+                        getGameState().increment("points", 250);
+                        getGameState().increment("level", 1);
+                        getDisplay().showMessageBox("You just cleared level " + getLevel());
                         startLevel(getLevel());
                     } else {
-                        System.out.println("congratulations.. You won the game! ");
+                        if(getLevels().size()==getLevel()) {
+                            getDisplay().showMessageBox("congratulations.. You won the game!");
+                            System.out.println("congratulations.. You won the game! ");
+                        }
                     }
                 } else {
+                    getDisplay().showMessageBox("You have not collected all the chips in this level!!");
                     System.out.println("You have not collected all the chips in this level!!");
                 }
-            }
-
-            @Override
-            protected void onCollision(Entity player, Entity water) {
-
-
-
-            }
-
-            @Override
-            protected void onCollisionEnd(Entity player, Entity water) {
-
-
             }
 
         });
@@ -518,6 +504,7 @@ public class Inside extends GameApplication {
                     getGameState().increment("points", -50);
                     getGameState().increment("deaths", 1);
                     getAudioPlayer().playSound("Water_Hit.wav");
+                    getDisplay().showMessageBox("Death by drowning!");
                     startLevel(getLevel());
                 } else {
                     player.getComponent(PlayerControl.class).setInWater(true);
@@ -566,6 +553,7 @@ public class Inside extends GameApplication {
                     getGameState().increment("points", -50);
                     getGameState().increment("deaths", 1);
                     getAudioPlayer().playSound("Fire_2.wav");
+                    getDisplay().showMessageBox("Death by fire!");
                     startLevel(getLevel());
                 } else {
                     getAudioPlayer().playSound("Fire_2.wav");
@@ -603,8 +591,8 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity enemyTest, Entity wall) {
                 super.onCollisionBegin(enemyTest, wall);
 
-                enemyTest.getComponent(EnemyControl.class).setColliding(true);
-                enemyTest.getComponent(EnemyControl.class).onUpdate(tpf());
+                enemyTest.getComponent(EnemySpiderControl.class).setColliding(true);
+                enemyTest.getComponent(EnemySpiderControl.class).onUpdate(tpf());
             }
             @Override
             protected void onCollision(Entity enemyTest, Entity wall) {
@@ -614,7 +602,7 @@ public class Inside extends GameApplication {
             protected void onCollisionEnd(Entity enemyTest, Entity wall) {
                 super.onCollisionBegin(enemyTest, wall);
 
-                enemyTest.getComponent(EnemyControl.class).setColliding(false);
+                enemyTest.getComponent(EnemySpiderControl.class).setColliding(false);
             }
 
         });
@@ -626,6 +614,8 @@ public class Inside extends GameApplication {
 
                         getGameState().increment("points", -50);
                         getAudioPlayer().playSound("Death_By_Enemy.wav");
+                        getGameState().increment("deaths",1);
+                        getDisplay().showMessageBox("You were killed by an Enemy!");
                         startLevel(getLevel());
 
             }
@@ -646,7 +636,7 @@ public class Inside extends GameApplication {
 
                 getPlayerInventory().add(iceBoots.getType().toString());
                 iceBoots.removeFromWorld();
-
+                addInventoryToUI();
             }
         });
 
@@ -663,6 +653,24 @@ public class Inside extends GameApplication {
 
                 getPlayerInventory().add(fireBoots.getType().toString());
                 fireBoots.removeFromWorld();
+                addInventoryToUI();
+            }
+        });
+
+        //-------------------------------------------------------------------------------------------------------------
+        //BOOTS--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //Collision handling for  playerFound and iceBoots
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WATERBOOTS) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity waterBoots) {
+
+                getPlayerInventory().add("WATERBOOTS");
+                waterBoots.removeFromWorld();
+                addInventoryToUI();
 
             }
         });
@@ -698,6 +706,7 @@ public class Inside extends GameApplication {
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     redDoor.removeFromWorld();
                     getPlayerInventory().remove("REDKEY");
+                    addInventoryToUI();
 
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
@@ -747,6 +756,7 @@ public class Inside extends GameApplication {
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     blueDoor.removeFromWorld();
                     getPlayerInventory().remove("BLUEKEY");
+                    addInventoryToUI();
 
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
@@ -796,6 +806,7 @@ public class Inside extends GameApplication {
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     greenDoor.removeFromWorld();
                     getPlayerInventory().remove("GREENKEY");
+                    addInventoryToUI();
 
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
@@ -846,6 +857,7 @@ public class Inside extends GameApplication {
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     yellowDoor.removeFromWorld();
                     getPlayerInventory().remove("YELLOWKEY");
+                    addInventoryToUI();
 
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
@@ -882,10 +894,9 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity redKey) {
 
                 getPlayerInventory().add("REDKEY");
-
                 getAudioPlayer().playSound("Key_Pickup.wav");
-
                 redKey.removeFromWorld();
+                addInventoryToUI();
 
             }
         });
@@ -900,7 +911,7 @@ public class Inside extends GameApplication {
                 getPlayerInventory().add("BLUEKEY");
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 blueKey.removeFromWorld();
-
+                addInventoryToUI();
             }
         });
 
@@ -914,6 +925,7 @@ public class Inside extends GameApplication {
                 getPlayerInventory().add("GREENKEY");
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 greenKey.removeFromWorld();
+                addInventoryToUI();
 
             }
         });
@@ -925,11 +937,12 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity yellowKey) {
                 //Collision handling for  playerFound and water
-                getPlayerInventory().add("WATERBOOTS");
+                //getPlayerInventory().add("WATERBOOTS");
                 getPlayerInventory().add("YELLOWKEY");
+                getPlayerInventory().add("WATERBOOTS");
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 yellowKey.removeFromWorld();
-
+                addInventoryToUI();
             }
         });
 
@@ -940,16 +953,6 @@ public class Inside extends GameApplication {
     protected void initInput() {
         super.initInput();
 
-
-
-        // initializing AnimationChannels to use with walking
-        AnimationChannel animForward, animBackward, animLeft, animRight;
-        animForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-        animRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 7);
-
-
         Input input = getInput();
 
 
@@ -958,14 +961,19 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionBegin(){
                 super.onActionBegin();
-
+/*
                 setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
-                getTexture().loopAnimationChannel(animForward);
+                if(getPlayer().getComponent(PlayerControl.class).isInWater()){
+                    getTexture().loopAnimationChannel(inWaterUp);
+                } else {
+                    getTexture().loopAnimationChannel(animForward);
+                }
+
                 if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
-
+*/
             }
 
 
@@ -983,7 +991,9 @@ public class Inside extends GameApplication {
             protected void onActionEnd(){
                 super.onActionEnd();
 
-                setIdleTexture(input);
+                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
+                    setIdleTexture(getInput());
+                }
 
             }
 
@@ -993,12 +1003,21 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionBegin() {
                 super.onActionBegin();
+
+                /*
                 setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
-                getTexture().loopAnimationChannel(animBackward);
+                if(getPlayer().getComponent(PlayerControl.class).isInWater()){
+                    getTexture().loopAnimationChannel(inWaterDown);
+                } else {
+                    getTexture().loopAnimationChannel(animBackward);
+                }
+
+
                 if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
+                */
             }
 
             @Override
@@ -1013,8 +1032,9 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd(){
                 super.onActionEnd();
-
-                setIdleTexture(input);
+                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
+                    setIdleTexture(getInput());
+                }
             }
         }, KeyCode.S);
 
@@ -1022,13 +1042,19 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionBegin(){
                 super.onActionBegin();
-
+/*
                 setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
-               getTexture().loopAnimationChannel(animLeft);
+                if(getPlayer().getComponent(PlayerControl.class).isInWater()){
+                    getTexture().loopAnimationChannel(inWaterLeft);
+                } else {
+                    getTexture().loopAnimationChannel(animLeft);
+                }
+
                 if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
+                */
             }
 
             @Override
@@ -1045,7 +1071,9 @@ public class Inside extends GameApplication {
             protected void onActionEnd(){
                 super.onActionEnd();
 
-                setIdleTexture(input);
+                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
+                    setIdleTexture(getInput());
+                }
             }
 
         }, KeyCode.A);
@@ -1055,14 +1083,19 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionBegin() {
                 super.onActionBegin();
-
+/*
                 setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
 
-                texture.loopAnimationChannel(animRight);
+                if(getPlayer().getComponent(PlayerControl.class).isInWater()){
+                    getTexture().loopAnimationChannel(inWaterRight);
+                } else {
+                    getTexture().loopAnimationChannel(animRight);
+                }
 
                 if(!getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).setCanMove(true);
                 }
+                */
             }
 
             @Override
@@ -1078,7 +1111,9 @@ public class Inside extends GameApplication {
             protected void onActionEnd() {
                 super.onActionEnd();
 
-                setIdleTexture(input);
+                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
+                    setIdleTexture(getInput());
+                }
 
             }
         }, KeyCode.D);
@@ -1123,77 +1158,74 @@ public class Inside extends GameApplication {
     @Override
     protected void initUI() {
         super.initUI();
-        // UI CONTAINER -----------------------------------------------------------------------------------------------
-        Rectangle uiContainer = new Rectangle(1274,50, Color.BLACK);
-        uiContainer.setTranslateX(3);
 
-        uiContainer.setTranslateY(720-53);
+        updateUI();
+    }
 
-        DropShadow ds = new DropShadow();
-        ds.setOffsetY(3.0);
-        ds.setOffsetX(3.0);
-        ds.setColor(Color.DARKBLUE);
+    public void updateUI(){
+        Texture uiContainer = getAssetLoader().loadTexture("UIContainer.png");
 
-        uiContainer.setEffect(ds);
+        uiContainer.setTranslateY(620);
 
         getGameScene().addUINode(uiContainer);
 
 
-        // TEXT BUTTOM LEFT CORNER (POINTS + CHIPS LEFT) -----------------------------------------------------------------
-        Text points = getUIFactory().newText("Points",Color.WHITE, 15);
-        Text chipsLeft = getUIFactory().newText("Chips Left",Color.WHITE, 15);
-        Text pointsGameVar = getUIFactory().newText("", Color.WHITE,15);
-        Text chipsGameVar = getUIFactory().newText("", Color.WHITE,15);
+        // TEXT BUTTOM LEFT CORNER (POINTS + CHIPS LEFT) --------------------------------------------------------------
 
+        //text points
+        Text points = getUIFactory().newText("Points",Color.WHITE, 15);
+        points.setTranslateX(15);
+        points.setTranslateY(648);
+
+        //text attached to "points" game variable
+        Text pointsGameVar = getUIFactory().newText("", Color.WHITE,15);
+        pointsGameVar.setTranslateX(130);
+        pointsGameVar.setTranslateY(648);
+
+        //text "chips left"
+        Text chipsLeft = getUIFactory().newText("Chips Left",Color.WHITE, 15);
+        chipsLeft.setTranslateX(15);
+        chipsLeft.setTranslateY(702);
+
+        //text attached to game variable "chips"
+        Text chipsGameVar = getUIFactory().newText("", Color.WHITE,15);
+        chipsGameVar.setTranslateX(130);
+        chipsGameVar.setTranslateY(702);
+
+
+        //text "level"
+        Text level = getUIFactory().newText("Level ", Color.WHITE, 15);
+        level.setTranslateX(1120);
+        level.setTranslateY(702);
+
+        //text attached to game variable "level"
         Text levelGameVar = getUIFactory().newText("", Color.WHITE,15);
         levelGameVar.setTranslateX(1235);
-        levelGameVar.setTranslateY(705);
+        levelGameVar.setTranslateY(702);
 
-        Text level = getUIFactory().newText("Level ", Color.WHITE, 15);
-        level.setTranslateX(1170);
-        level.setTranslateY(705);
 
+        //text "Deaths"
         Text deaths = getUIFactory().newText("Deaths ", Color.WHITE, 15);
-        deaths.setTranslateX(1160);
-        deaths.setTranslateY(685);
+        deaths.setTranslateX(1120);
+        deaths.setTranslateY(648);
 
+        //text attached to game variable "deaths" (death counter)
         Text deathsGameVar = getUIFactory().newText("", Color.WHITE, 15);
         deathsGameVar.setTranslateX(1235);
-        deathsGameVar.setTranslateY(685);
+        deathsGameVar.setTranslateY(648);
 
-
-        points.setTranslateX(43);
-        points.setTranslateY(685);
-
-        chipsLeft.setTranslateX(15);
-        chipsLeft.setTranslateY(705);
-
-        pointsGameVar.setTranslateX(145);
-        pointsGameVar.setTranslateY(685);
-
-        chipsGameVar.setTranslateX(145);
-        chipsGameVar.setTranslateY(705);
-
+        //Binding texts to game variables
         levelGameVar.textProperty().bind(getGameState().intProperty("level").asString());
         pointsGameVar.textProperty().bind(getGameState().intProperty("points").asString());
         chipsGameVar.textProperty().bind(getGameState().intProperty("chipsLeft").asString());
         deathsGameVar.textProperty().bind(getGameState().intProperty("deaths").asString());
 
-        /*
-        Texture redkey = new Texture(new Image("assets/textures/redKey.png"));
-        redkey.setTranslateX(500);
-        redkey.setTranslateY(500);
 
-        Texture yellowkey = new Texture(new Image("assets/textures/yellowKey.png"));
-        yellowkey.setTranslateX(500);
-        yellowkey.setTranslateY(600);
-*/
-
-
+        //adding nodes to UI
         getGameScene().addUINodes(points, chipsLeft, level, deaths, pointsGameVar, chipsGameVar, levelGameVar, deathsGameVar);
 
 
-//Adding tab menu
+        //Adding tab menu
         panel = new InGamePanel();
 
         Text text = getUIFactory().newText("Achievements");
@@ -1202,8 +1234,215 @@ public class Inside extends GameApplication {
         panel.getChildren().add(text);
 
         getGameScene().addUINode(panel);
+    }
 
 
+    //counter used in addInventoryToUI method
+    private int inventoryIULastPosition = 1;
+
+    //Method inserting pictures and numbers into UI as Nodes
+    public void addInventoryToUI(){
+
+        //initializing Textures with pictures (assets)
+        Texture yellowKeyPNG = getAssetLoader().loadTexture("yellowKey.png", 32, 32);
+        Texture greenKeyPNG = getAssetLoader().loadTexture("greenKey.png", 32, 32);
+        Texture redKeyPNG = getAssetLoader().loadTexture("redKey.png", 32, 32);
+        Texture blueKeyPNG = getAssetLoader().loadTexture("blueKey.png", 32, 32);
+
+        Texture iceBootsPNG = getAssetLoader().loadTexture("iceBoots.png", 32, 32);
+        Texture fireBootsPNG = getAssetLoader().loadTexture("fireBoots.png", 32, 32);
+        Texture waterBootsPNG = getAssetLoader().loadTexture("waterBoots.png", 32, 32);
+
+        //Clearing and updating UI using updateUI() method
+        getGameScene().clearUINodes();
+        updateUI();
+
+        //resetting counter for position of textures on scene
+        setInventoryUILastPosition(1);
+
+        //initializing new HashMap
+        Map<String, Integer> counts = new HashMap<String, Integer>();
+
+        //counting number of duplicate strings in ArrayList playerInventory
+        for (String str : getPlayerInventory()) {
+            if (counts.containsKey(str)) {
+                counts.put(str, counts.get(str) + 1);
+            } else {
+                counts.put(str, 1);
+            }
+        }
+
+        //initializing temp String used below
+        String counterText = "";
+
+        //using Strings from Map in a switch
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            System.out.println(entry.getKey() + " = " + entry.getValue());
+            switch (entry.getKey()){
+                case "YELLOWKEY":
+                    yellowKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+                    yellowKeyPNG.setTranslateY(652);
+                    getGameScene().addUINode(yellowKeyPNG); //adding picture
+
+                    //adds number to UI if there is more than one yellowKey in inventory
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text yellowKeyAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        yellowKeyAmount.setTranslateX(213 + 43 * getInventoryIULastPosition());
+                        yellowKeyAmount.setTranslateY(658);
+                        getGameScene().addUINode(yellowKeyAmount);
+                        System.out.println("inside if statement yellowKey");
+                    }
+                    setInventoryUILastPosition(getInventoryIULastPosition()+1);
+                    break;
+
+
+                case "GREENKEY":
+                    greenKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+                    greenKeyPNG.setTranslateY(652);
+                    getGameScene().addUINode(greenKeyPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text greenKeyAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        greenKeyAmount.setTranslateX(213 + 43 * getInventoryIULastPosition());
+                        greenKeyAmount.setTranslateY(658);
+                        getGameScene().addUINode(greenKeyAmount);
+                        System.out.println("inside if statement greenKey");
+                    }
+                    setInventoryUILastPosition(getInventoryIULastPosition()+1);
+                    break;
+
+                case "BLUEKEY":
+                    blueKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+                    blueKeyPNG.setTranslateY(652);
+                    getGameScene().addUINode(blueKeyPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text blueKeyAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        blueKeyAmount.setTranslateX(213 + 43 * getInventoryIULastPosition());
+                        blueKeyAmount.setTranslateY(658);
+                        getGameScene().addUINode(blueKeyAmount);
+                        System.out.println("inside if statement blueKey");
+                    }
+                    setInventoryUILastPosition(getInventoryIULastPosition()+1);
+                    break;
+
+                case "REDKEY":
+                    redKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+                    redKeyPNG.setTranslateY(652);
+                    getGameScene().addUINode(redKeyPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text redKeyAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        redKeyAmount.setTranslateX(213 + 43 * getInventoryIULastPosition());
+                        redKeyAmount.setTranslateY(658);
+                        getGameScene().addUINode(redKeyAmount);
+                        System.out.println("inside if statement redKey");
+                    }
+                    setInventoryUILastPosition(getInventoryIULastPosition()+1);
+                    break;
+
+                case "WATERBOOTS":
+                    waterBootsPNG.setTranslateX(215 + 43 * 5);
+                    waterBootsPNG.setTranslateY(652);
+                    getGameScene().addUINode(waterBootsPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text waterBootsAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        waterBootsAmount.setTranslateX(213 + 43 * 5);
+                        waterBootsAmount.setTranslateY(658);
+                        getGameScene().addUINode(waterBootsAmount);
+                        System.out.println("inside if statement waterBoots");
+                    }
+                    break;
+
+                case "ICEBOOTS":
+                    iceBootsPNG.setTranslateX(215 + 43 * 6);
+                    iceBootsPNG.setTranslateY(652);
+                    getGameScene().addUINode(iceBootsPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text iceBootsAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        iceBootsAmount.setTranslateX(213 + 43 * 6);
+                        iceBootsAmount.setTranslateY(658);
+                        getGameScene().addUINode(iceBootsAmount);
+                        System.out.println("inside if statement iceBoots");
+                    }
+                    break;
+
+                case "FIREBOOTS":
+                    fireBootsPNG.setTranslateX(215 + 43 * 7);
+                    fireBootsPNG.setTranslateY(652);
+                    getGameScene().addUINode(fireBootsPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text fireBootsAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        fireBootsAmount.setTranslateX(213 + 43 * 7);
+                        fireBootsAmount.setTranslateY(658);
+                        getGameScene().addUINode(fireBootsAmount);
+                        System.out.println("inside if statement fireBoots");
+                    }
+                    break;
+
+            }
+        }
+
+
+        //first try on inventoryUI, almost worked, but threw illegal argument exception because of duplicate nodes
+        //being added to scene
+
+        /*
+try {
+    for (String s : getPlayerInventory()) {
+        if (s.equalsIgnoreCase("yellowKey")) {
+            yellowKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            yellowKeyPNG.setTranslateY(652);
+            getGameScene().addUINode(yellowKeyPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("greenKey")) {
+            greenKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            greenKeyPNG.setTranslateY(652);
+            getGameScene().addUINode(greenKeyPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("redKey")) {
+            redKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            redKeyPNG.setTranslateY(652);
+            getGameScene().addUINode(redKeyPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("blueKey")) {
+            blueKeyPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            blueKeyPNG.setTranslateY(652);
+            getGameScene().addUINode(blueKeyPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("iceBoots")) {
+            iceBootsPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            iceBootsPNG.setTranslateY(652);
+            getGameScene().addUINode(iceBootsPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("fireBoots")) {
+            fireBootsPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            fireBootsPNG.setTranslateY(652);
+            getGameScene().addUINode(fireBootsPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        } else if (s.equalsIgnoreCase("waterBoots")) {
+            waterBootsPNG.setTranslateX(215 + 43 * getInventoryIULastPosition());
+            waterBootsPNG.setTranslateY(652);
+            getGameScene().addUINode(waterBootsPNG);
+            setInventoryUILastPosition(getInventoryIULastPosition() + 1);
+        }
+    }
+
+    } catch (IllegalArgumentException e){
+        System.out.println("ups, noget gik galt");
+
+    }
+    */
     }
 
 
@@ -1212,21 +1451,29 @@ public class Inside extends GameApplication {
         launch(args);
     }
 
+    //Method starts a new level, is used whenever world is reloaded
+    //(also when game is first launched)(also player dying!)
     private void startLevel(int level) {
-        System.out.println("1. step");
+        //clearing world
+        System.out.println("Clear World");
         getGameWorld().clear();
 
-        System.out.println("here ??");
-
+        System.out.println("Adding EntityFactories");
+        //adding entityfactories (Entities from map)
         getGameWorld().addEntityFactory(new PlayerFactory());
         getGameWorld().addEntityFactory(new EnvironmentalFactory());
         getGameWorld().addEntityFactory(new CollectiblesFactory()); // adding data from tiledMap data (see class)
         getGameWorld().addEntityFactory(new EnemyFactory());
-        System.out.println("here ?!?!?!?!?!");
-        getGameWorld().setLevelFromMap(getLevelAsString(level));
-        System.out.println("MAYBE HERE?!?!?!");
-        //finding playerFound inside gameWorld
 
+        //setting level from json file from tiledMap
+        System.out.println("Setting Level from map");
+        getGameWorld().setLevelFromMap(getLevelAsString(level));
+
+        //resetting chipsLeft value
+        getGameState().setValue("chipsLeft", 0);
+
+        //finding playerFound inside gameWorld
+        System.out.println("Finding player on map");
         ArrayList<Entity> entities = getGameWorld().getEntities();
         for (Entity entity : entities) {
             if (entity.isType(PLAYER)) {
@@ -1236,31 +1483,38 @@ public class Inside extends GameApplication {
             }
         }
 
-        getGameState().increment("level", 1);
-
+        //setting Player position (used elsewhere)
         setPlayerPosition(new Point2D(getPlayer().getX(), getPlayer().getY()));
 
+/*
         ArrayList<Entity> enemyTestList = getGameWorld().getEntities();
         for (Entity anEnemyTestList : enemyTestList) {
             if (anEnemyTestList.isType(ENEMYTEST)) {
                 enemyTest = anEnemyTestList;
             }
         }
-
+*/
         //adding camera
         Viewport viewport = getGameScene().getViewport();
 
-        //zooming in
+        //Zooming in
         viewport.setZoom(2.2);
 
         //place camera and set to follow playerFound
         viewport.bindToEntity(getPlayer(),300,160);
 
-
+        //prints playerinfo to console
         getPlayer().getComponent(PlayerControl.class).playerInfo();
 
-
+        //Emptying player inventory
         setPlayerInventory(new ArrayList<>());
+
+        getGameScene().clearUINodes();
+        updateUI();
+
+
+        //not runnable
+        //getDisplay().showMessageBox("Welcome to level " + getLevel());
 
 
     }
@@ -1283,16 +1537,16 @@ public class Inside extends GameApplication {
 
     private void setIdleTexture(Input input){
         AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
-        animIdleForward = new AnimationChannel("PlayerForwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleBackward = new AnimationChannel("PlayerBackwardAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleLeft = new AnimationChannel("PlayerLeftAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
-        animIdleRight = new AnimationChannel("PlayerRightAnimated.png", 8, 16, 29, Duration.seconds(1), 0, 0);
+        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
 
 
         if(!input.isHeld(KeyCode.W)
                 &&!input.isHeld(KeyCode.A)
                 &&!input.isHeld(KeyCode.D)
-                &&!input.isHeld(KeyCode.K)){
+                &&!input.isHeld(KeyCode.S)){
             String lastMove = getPlayer().getComponent(PlayerControl.class).getLastMove();
             switch (lastMove){
                 case "right": getTexture().loopAnimationChannel(animIdleRight); break;
@@ -1326,6 +1580,15 @@ public class Inside extends GameApplication {
     public void setLevels(ArrayList<String> levels) {
         this.levels = levels;
     }
+
+    public int getInventoryIULastPosition() {
+        return inventoryIULastPosition;
+    }
+
+    public void setInventoryUILastPosition(int inventoryIULastPosition) {
+        this.inventoryIULastPosition = inventoryIULastPosition;
+    }
+
 }
 
 
