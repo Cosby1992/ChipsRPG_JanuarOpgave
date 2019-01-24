@@ -182,6 +182,18 @@ public class CollectiblesFactory implements EntityFactory {
                 .build();
     }
 
+    @Spawns("suckerBoots")
+    public static Entity newSuckerBoots(SpawnData data){
+        System.out.println("New suckerBoots object was created");
+        return Entities.builder()
+                .type(SUCKERBOOTS)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .viewFromTexture("suckerBoots.png")
+                .build();
+    }
+
 
     //ENDZONE----------------------------------------------------------------------------------------------------------
 

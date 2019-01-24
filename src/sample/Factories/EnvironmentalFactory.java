@@ -5,6 +5,7 @@ import com.almasb.fxgl.entity.components.CollidableComponent;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import javafx.util.Duration;
+import sample.Control.DirtBlockControl;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
 import static sample.EntityTypes.Type.*;
@@ -102,6 +103,78 @@ public class EnvironmentalFactory implements EntityFactory {
                 .with(new CollidableComponent(true))
                 .build();
     }
+
+    @Spawns("speedUp")
+    public static Entity speedUp(SpawnData data){
+        System.out.println("a new SpeedUp object created");
+        return Entities.builder()
+                .type(SPEEDUP)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
+
+    @Spawns("speedDown")
+    public static Entity speedDown(SpawnData data){
+        System.out.println("a new SpeedDown object created");
+        return Entities.builder()
+                .type(SPEEDDOWN)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
+
+    @Spawns("speedLeft")
+    public static Entity speedLeft(SpawnData data){
+        System.out.println("a new SpeedLeft object created");
+        return Entities.builder()
+                .type(SPEEDLEFT)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
+
+    @Spawns("speedRight")
+    public static Entity speedRight(SpawnData data){
+        System.out.println("a new SpeedRight object created");
+        return Entities.builder()
+                .type(SPEEDRIGHT)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
+
+
+    @Spawns("dirtBlock")
+    public static Entity dirtBlock(SpawnData data){
+        System.out.println("a new dirtBlock object created");
+        Entity build = Entities.builder()
+                .type(DIRTBLOCK)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .with(new DirtBlockControl())
+                .viewFromTexture("dirtBlock.png")
+                .build();
+        return build;
+    }
+
+
+    @Spawns("?block")
+    public static Entity QuestionBlock(SpawnData data){
+        System.out.println("a new questionBlock object created");
+        return Entities.builder()
+                .type(QUESTIONBLOCK)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
+
 
     @Spawns("")
     public static Entity newnewnew(SpawnData data){

@@ -2,16 +2,21 @@ package sample.Control;
 
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
+import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
+import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
+import sample.Inside;
 
 import java.util.ArrayList;
 
+
+
 public class PlayerControl extends Component {
 
-    private boolean canMove = true;
     private int speed = 100;
+    private boolean canMove = true;
     private ArrayList<String> inventory = new ArrayList<String>();
     private boolean onIce = false;
     private boolean inWater = false;
@@ -20,7 +25,7 @@ public class PlayerControl extends Component {
 
     private AnimatedTexture texture;
     private AnimationChannel animIdleForward;
-    private AnimationChannel animForward, animBackward, animLeft, animRight, inWaterUp, inWaterDown, inWaterLeft, inWaterRight;
+    private AnimationChannel animForward, animBackward, animLeft, animRight, inWaterUp, inWaterDown, inWaterLeft, inWaterRight, onIceAnim;
 
     //Constructor
     public PlayerControl() {
@@ -35,6 +40,8 @@ public class PlayerControl extends Component {
         inWaterDown = new AnimationChannel("inWaterDown.png",2,18,19,Duration.seconds(0.5),0,1);
         inWaterLeft = new AnimationChannel("inWaterLeft.png",2,18,19,Duration.seconds(0.5),0,1);
         inWaterRight = new AnimationChannel("inWaterRight.png",2,18,19,Duration.seconds(0.5),0,1);
+
+        onIceAnim = new AnimationChannel("onIce.png", 4,13,28,Duration.seconds(0.5),0,3);
 
 
         animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
@@ -60,7 +67,7 @@ public class PlayerControl extends Component {
         } else if(isInWater() && isCanMove() && !isOnIce()){
             setSpeed(50);
         } else if (onIce && canMove && !inWater){
-            setSpeed(185);
+            setSpeed(220);
         } else{
             setSpeed(100);
             setCanMove(true);
@@ -83,7 +90,7 @@ public class PlayerControl extends Component {
             setLastMove("down");
         }
 
-
+        //TODO: Idle textures onUpdate.
 
     }
 
@@ -96,7 +103,6 @@ public class PlayerControl extends Component {
                 getTexture().loopAnimationChannel(animRight);
             }
 
-            setLastMove("right");
         }
     }
 
@@ -151,6 +157,30 @@ public class PlayerControl extends Component {
     public ArrayList<String> getInventory(){
         return inventory;
     }
+
+
+    private void setIdleTexture(Input input){
+        AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
+        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+
+
+        if(!input.isHeld(KeyCode.W)
+                &&!input.isHeld(KeyCode.A)
+                &&!input.isHeld(KeyCode.D)
+                &&!input.isHeld(KeyCode.S)){
+            String lastMove = getLastMove();
+            switch (lastMove){
+                case "right": getTexture().loopAnimationChannel(animIdleRight); break;
+                case "left": getTexture().loopAnimationChannel(animIdleLeft); break;
+                case "up": getTexture().loopAnimationChannel(animIdleForward); break;
+                case "down": getTexture().loopAnimationChannel(animIdleBackward); break;
+            }
+        }
+    }
+
 
 
     //getters and setters

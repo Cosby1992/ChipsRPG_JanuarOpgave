@@ -16,6 +16,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import sample.Control.DirtBlockControl;
 import sample.Control.PlayerControl;
 import sample.Factories.CollectiblesFactory;
 import sample.Control.EnemySpiderControl;
@@ -48,9 +49,11 @@ public class Inside extends GameApplication {
     private ArrayList<String> playerInventory;
     private AnimatedTexture texture;
     private InGamePanel panel;
+    private int speed = 100;
 
 
     private  ArrayList<String> levels = new ArrayList<>(){{
+        add("ForcedPursuit.json");
         add("elements_test.json");
         add("testMap2000.json");
         add("level3.json");}};
@@ -101,7 +104,7 @@ public class Inside extends GameApplication {
     }
 
     //Importing factories, maps (TiledMap), creating camera, and general game settings
-    //Invoking startLevel();
+    //Invoking startLevel method
     @Override
     protected void initGame() { //setting up Entities in GameWorld
 
@@ -165,6 +168,29 @@ public class Inside extends GameApplication {
                 Point2D point = wall.getCenter();
                 player.translateTowards(point, -50*tpf());
 
+                if(player.getComponent(PlayerControl.class).isOnIce()){
+                   // player.getComponent(PlayerControl.class).setCanMove(true);
+                    switch(player.getComponent(PlayerControl.class).getLastMove()){
+                        case "up":
+                            player.getComponent(PlayerControl.class).moveDown(tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("down");
+                            break;
+                        case "down":
+                            player.getComponent(PlayerControl.class).moveUp(tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("up");
+                            break;
+                        case "left":
+                            player.getComponent(PlayerControl.class).moveRight(tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("right");
+                            break;
+                        case "right":
+                            player.getComponent(PlayerControl.class).moveLeft(tpf());
+                            player.getComponent(PlayerControl.class).setLastMove("left");
+                            break;
+                    }
+                   // player.getComponent(PlayerControl.class).setCanMove(false);
+                }
+
 
             }
 
@@ -222,10 +248,210 @@ public class Inside extends GameApplication {
 
 
         //-------------------------------------------------------------------------------------------------------------
+        //SPECIAL BLOCKS-----------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        //DIRTBLOCK----------------------------------------------------------------------------------------------------
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, DIRTBLOCK) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity dirtBlock) {
+                super.onCollisionBegin(player, dirtBlock);
+
+
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity dirtBlock) {
+                super.onCollision(player, dirtBlock);
+
+                switch (player.getComponent(PlayerControl.class).getLastMove()){
+                    case "up": dirtBlock.translateY(-speed*tpf()); break;
+                    case "down": dirtBlock.translateY(speed*tpf());break;
+                    case "left": dirtBlock.translateX(-speed*tpf()); break;
+                    case "right": dirtBlock.translateX(speed*tpf()); break;
+                }
+                player.getComponent(PlayerControl.class).setSpeed(0);
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity dirtBlock) {
+                super.onCollisionEnd(player, dirtBlock);
+                player.getComponent(PlayerControl.class).setSpeed(100);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(WALL, DIRTBLOCK) {
+            @Override
+            protected void onCollisionBegin(Entity wall, Entity dirtBlock) {
+                super.onCollisionBegin(wall, dirtBlock);
+                dirtBlock.translateTowards(wall.getCenter(),-0*tpf());
+            }
+
+            @Override
+            protected void onCollision(Entity wall, Entity dirtBlock) {
+                super.onCollision(wall, dirtBlock);
+                dirtBlock.translateTowards(wall.getCenter(),-101*tpf());
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity wall, Entity dirtBlock) {
+                super.onCollisionEnd(wall, dirtBlock);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(WATER, DIRTBLOCK) {
+            @Override
+            protected void onCollisionBegin(Entity a, Entity b) {
+                super.onCollisionBegin(a, b);
+            }
+
+            @Override
+            protected void onCollision(Entity water, Entity dirtBlock) {
+                super.onCollision(water, dirtBlock);
+
+                Point2D waterLocation = new Point2D(water.getX(),water.getY());
+
+                switch (getPlayer().getComponent(PlayerControl.class).getLastMove()){
+                    case "up":
+                        if(dirtBlock.getCenter().getY()-10<water.getCenter().getY()){
+                            dirtBlock.removeFromWorld();
+                            water.removeFromWorld();
+                        } break;
+                    case "down":
+                        if(dirtBlock.getCenter().getY()+10>water.getCenter().getY()){
+                            dirtBlock.removeFromWorld();
+                            water.removeFromWorld();
+                        } break;
+                    case "left":
+                        if(dirtBlock.getCenter().getX()-10<water.getCenter().getX()){
+                            dirtBlock.removeFromWorld();
+                            water.removeFromWorld();
+                        } break;
+                    case "right":
+                        if(dirtBlock.getCenter().getX()+10>water.getCenter().getX()){
+                            dirtBlock.removeFromWorld();
+                            water.removeFromWorld();
+                        } break;
+                }
+
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity a, Entity b) {
+                super.onCollisionEnd(a, b);
+            }
+        });
+
+
+        //SPEEDBLOCKS
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER,SPEEDUP) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity speedUp) {
+                super.onCollisionBegin(player, speedUp);
+                if(!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.getComponent(PlayerControl.class).setSpeed(20);
+                    player.translateY(-400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity speedUp) {
+                super.onCollision(player, speedUp);
+                if(!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.translateY(-400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity speedUp) {
+                super.onCollisionEnd(player, speedUp);
+                player.getComponent(PlayerControl.class).setSpeed(100);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER,SPEEDDOWN) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity speedDown) {
+                super.onCollisionBegin(player, speedDown);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.getComponent(PlayerControl.class).setSpeed(20);
+                    player.translateY(400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity speedDown) {
+                super.onCollision(player, speedDown);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.translateY(400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity speedDown) {
+                super.onCollisionEnd(player, speedDown);
+                player.getComponent(PlayerControl.class).setSpeed(100);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER,SPEEDLEFT) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity speedLeft) {
+                super.onCollisionBegin(player, speedLeft);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.getComponent(PlayerControl.class).setSpeed(20);
+                    player.translateX(-400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity speedLeft) {
+                super.onCollision(player, speedLeft);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.translateX(-400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity speedLeft) {
+                super.onCollisionEnd(player, speedLeft);
+                player.getComponent(PlayerControl.class).setSpeed(100);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER,SPEEDRIGHT) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity speedRight) {
+                super.onCollisionBegin(player, speedRight);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.getComponent(PlayerControl.class).setSpeed(20);
+                    player.translateX(400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity speedRight) {
+                super.onCollision(player, speedRight);
+                if (!getPlayerInventory().contains("SUCKERBOOTS")) {
+                    player.translateX(400 * tpf());
+                }
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity speedRight) {
+                super.onCollisionEnd(player, speedRight);
+                player.getComponent(PlayerControl.class).setSpeed(100);
+            }
+        });
+
+        //-------------------------------------------------------------------------------------------------------------
         //ICE AND ICE-CORNERS------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
-        //Collision handling for  playerFound and ice
+        AnimationChannel onIceAnim;
+        onIceAnim = new AnimationChannel("onIce.png", 4,13,28,Duration.seconds(0.5),0,3);
+        //Collision handling for  player and ice
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICE) {
 
             // order of types is the same as passed into the constructor
@@ -234,6 +460,7 @@ public class Inside extends GameApplication {
 
                 if(!getPlayerInventory().contains("ICEBOOTS")) {
                     player.getComponent(PlayerControl.class).setOnIce(true);
+                    player.getComponent(PlayerControl.class).getTexture().loopAnimationChannel(onIceAnim);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
                 }
@@ -260,7 +487,7 @@ public class Inside extends GameApplication {
 
         });
 
-        //Collision handling for  playerFound and iceCornerTR
+        //Collision handling for  player and iceCornerTR
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERTR) {
 
             // order of types is the same as passed into the constructor
@@ -270,6 +497,7 @@ public class Inside extends GameApplication {
 
                 if(!getPlayerInventory().contains("ICEBOOTS")){
                     player.getComponent(PlayerControl.class).setOnIce(true);
+                    player.getComponent(PlayerControl.class).getTexture().loopAnimationChannel(onIceAnim);
                 } else{
                     player.getComponent(PlayerControl.class).setOnIce(false);
                 }
@@ -317,7 +545,7 @@ public class Inside extends GameApplication {
             }
         });
 
-        //Collision handling for  playerFound and iceCornerTL
+        //Collision handling for  player and iceCornerTL
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERTL) {
 
             // order of types is the same as passed into the constructor
@@ -374,7 +602,7 @@ public class Inside extends GameApplication {
             }
         });
 
-        //Collision handling for  playerFound and iceCornerBR
+        //Collision handling for  player and iceCornerBR
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERBR) {
 
             // order of types is the same as passed into the constructor
@@ -430,7 +658,7 @@ public class Inside extends GameApplication {
             }
         });
 
-        //Collision handling for  playerFound and iceCornerTL
+        //Collision handling for  player and iceCornerTL
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICECORNERBL) {
 
             // order of types is the same as passed into the constructor
@@ -489,10 +717,10 @@ public class Inside extends GameApplication {
 
 
         //-------------------------------------------------------------------------------------------------------------
-        //WATER--------------------------------------------------------------------------------------------------------
+        //WATER--FIRE--------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
-        //Collision handling for  playerFound and water
+        //Collision handling for  player and water
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WATER) {
 
             // order of types is the same as passed into the constructor
@@ -537,11 +765,7 @@ public class Inside extends GameApplication {
 
         });
 
-        //-------------------------------------------------------------------------------------------------------------
-        //WATER--------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------
-
-        //Collision handling for  playerFound and water
+        //Collision handling for  player and water
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, FIRE) {
 
             // order of types is the same as passed into the constructor
@@ -578,6 +802,8 @@ public class Inside extends GameApplication {
             }
 
         });
+
+
 
 
         //-------------------------------------------------------------------------------------------------------------
@@ -627,7 +853,7 @@ public class Inside extends GameApplication {
         //BOOTS--------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
-        //Collision handling for  playerFound and iceBoots
+        //Collision handling for  player and iceBoots
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICEBOOTS) {
 
             // order of types is the same as passed into the constructor
@@ -640,11 +866,7 @@ public class Inside extends GameApplication {
             }
         });
 
-        //-------------------------------------------------------------------------------------------------------------
-        //BOOTS--------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------
-
-        //Collision handling for  playerFound and iceBoots
+        //Collision handling for  player and fireBoots
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, FIREBOOTS) {
 
             // order of types is the same as passed into the constructor
@@ -657,11 +879,7 @@ public class Inside extends GameApplication {
             }
         });
 
-        //-------------------------------------------------------------------------------------------------------------
-        //BOOTS--------------------------------------------------------------------------------------------------------
-        //-------------------------------------------------------------------------------------------------------------
-
-        //Collision handling for  playerFound and iceBoots
+        //Collision handling for  player and waterBoots
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WATERBOOTS) {
 
             // order of types is the same as passed into the constructor
@@ -675,6 +893,23 @@ public class Inside extends GameApplication {
             }
         });
 
+        //Collision handling for  player and suckerBoots
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, SUCKERBOOTS) {
+
+            // order of types is the same as passed into the constructor
+            @Override
+            protected void onCollisionBegin(Entity player, Entity suckerBoots) {
+
+                getPlayerInventory().add("SUCKERBOOTS");
+                suckerBoots.removeFromWorld();
+                addInventoryToUI();
+
+            }
+        });
+
+        //-------------------------------------------------------------------------------------------------------------
+        //DOORS--------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
 
         //-------------------------------------------------------------------------------------------------------------
         //DOORS--------------------------------------------------------------------------------------------------------
@@ -886,6 +1121,10 @@ public class Inside extends GameApplication {
         //KEYS---------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
 
+        //-------------------------------------------------------------------------------------------------------------
+        //KEYS---------------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
         //Collision handling for playerFound and redKey
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, REDKEY) {
 
@@ -991,10 +1230,6 @@ public class Inside extends GameApplication {
             protected void onActionEnd(){
                 super.onActionEnd();
 
-                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
-                    setIdleTexture(getInput());
-                }
-
             }
 
         }, KeyCode.W);
@@ -1032,9 +1267,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd(){
                 super.onActionEnd();
-                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
-                    setIdleTexture(getInput());
-                }
             }
         }, KeyCode.S);
 
@@ -1071,9 +1303,6 @@ public class Inside extends GameApplication {
             protected void onActionEnd(){
                 super.onActionEnd();
 
-                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
-                    setIdleTexture(getInput());
-                }
             }
 
         }, KeyCode.A);
@@ -1110,10 +1339,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd() {
                 super.onActionEnd();
-
-                if(!getPlayer().getComponent(PlayerControl.class).isInWater()) {
-                    setIdleTexture(getInput());
-                }
 
             }
         }, KeyCode.D);
@@ -1162,7 +1387,7 @@ public class Inside extends GameApplication {
         updateUI();
     }
 
-    public void updateUI(){
+    private void updateUI(){
         Texture uiContainer = getAssetLoader().loadTexture("UIContainer.png");
 
         uiContainer.setTranslateY(620);
@@ -1236,12 +1461,11 @@ public class Inside extends GameApplication {
         getGameScene().addUINode(panel);
     }
 
-
     //counter used in addInventoryToUI method
     private int inventoryIULastPosition = 1;
 
-    //Method inserting pictures and numbers into UI as Nodes
-    public void addInventoryToUI(){
+    //Method inserting images and numbers into UI as Nodes
+    private void addInventoryToUI(){
 
         //initializing Textures with pictures (assets)
         Texture yellowKeyPNG = getAssetLoader().loadTexture("yellowKey.png", 32, 32);
@@ -1252,6 +1476,7 @@ public class Inside extends GameApplication {
         Texture iceBootsPNG = getAssetLoader().loadTexture("iceBoots.png", 32, 32);
         Texture fireBootsPNG = getAssetLoader().loadTexture("fireBoots.png", 32, 32);
         Texture waterBootsPNG = getAssetLoader().loadTexture("waterBoots.png", 32, 32);
+        Texture suckerBootsPNG = getAssetLoader().loadTexture("suckerBoots.png",32,32);
 
         //Clearing and updating UI using updateUI() method
         getGameScene().clearUINodes();
@@ -1387,6 +1612,21 @@ public class Inside extends GameApplication {
                         fireBootsAmount.setTranslateY(658);
                         getGameScene().addUINode(fireBootsAmount);
                         System.out.println("inside if statement fireBoots");
+                    }
+                    break;
+
+                case "SUCKERBOOTS":
+                    suckerBootsPNG.setTranslateX(215 + 43 * 8);
+                    suckerBootsPNG.setTranslateY(652);
+                    getGameScene().addUINode(suckerBootsPNG);
+
+                    if(entry.getValue()>1){
+                        counterText = entry.getValue().toString();
+                        Text suckerBootsAmount = getUIFactory().newText(counterText, Color.BLACK, 13);
+                        suckerBootsAmount.setTranslateX(213 + 43 * 7);
+                        suckerBootsAmount.setTranslateY(658);
+                        getGameScene().addUINode(suckerBootsAmount);
+                        System.out.println("inside if statement suckerBoots");
                     }
                     break;
 
@@ -1527,41 +1767,21 @@ try {
         this.playerFound = playerFound;
     }
 
-    public AnimatedTexture getTexture() {
+    private AnimatedTexture getTexture() {
         return texture;
     }
 
-    public void setTexture(AnimatedTexture texture) {
+    private void setTexture(AnimatedTexture texture) {
         this.texture = texture;
     }
 
-    private void setIdleTexture(Input input){
-        AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
-        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
 
 
-        if(!input.isHeld(KeyCode.W)
-                &&!input.isHeld(KeyCode.A)
-                &&!input.isHeld(KeyCode.D)
-                &&!input.isHeld(KeyCode.S)){
-            String lastMove = getPlayer().getComponent(PlayerControl.class).getLastMove();
-            switch (lastMove){
-                case "right": getTexture().loopAnimationChannel(animIdleRight); break;
-                case "left": getTexture().loopAnimationChannel(animIdleLeft); break;
-                case "up": getTexture().loopAnimationChannel(animIdleForward); break;
-                case "down": getTexture().loopAnimationChannel(animIdleBackward); break;
-            }
-        }
-    }
-
-    public ArrayList<String> getPlayerInventory() {
+    private ArrayList<String> getPlayerInventory() {
         return playerInventory;
     }
 
-    public void setPlayerInventory(ArrayList<String> playerInventory) {
+    private void setPlayerInventory(ArrayList<String> playerInventory) {
         this.playerInventory = playerInventory;
     }
 
@@ -1569,11 +1789,11 @@ try {
         return playerPosition;
     }
 
-    public void setPlayerPosition(Point2D playerPosition) {
+    private void setPlayerPosition(Point2D playerPosition) {
         this.playerPosition = playerPosition;
     }
 
-    public ArrayList<String> getLevels() {
+    private ArrayList<String> getLevels() {
         return levels;
     }
 
@@ -1581,13 +1801,14 @@ try {
         this.levels = levels;
     }
 
-    public int getInventoryIULastPosition() {
+    private int getInventoryIULastPosition() {
         return inventoryIULastPosition;
     }
 
-    public void setInventoryUILastPosition(int inventoryIULastPosition) {
+    private void setInventoryUILastPosition(int inventoryIULastPosition) {
         this.inventoryIULastPosition = inventoryIULastPosition;
     }
+
 
 }
 
