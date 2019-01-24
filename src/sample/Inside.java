@@ -12,6 +12,7 @@ import com.almasb.fxgl.texture.AnimationChannel;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -263,14 +264,12 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity player, Entity dirtBlock) {
                 super.onCollision(player, dirtBlock);
-
                 switch (player.getComponent(PlayerControl.class).getLastMove()){
                     case "up": dirtBlock.translateY(-speed*tpf()); break;
                     case "down": dirtBlock.translateY(speed*tpf());break;
                     case "left": dirtBlock.translateX(-speed*tpf()); break;
                     case "right": dirtBlock.translateX(speed*tpf()); break;
                 }
-                player.getComponent(PlayerControl.class).setSpeed(0);
             }
 
             @Override
@@ -450,7 +449,8 @@ public class Inside extends GameApplication {
         //-------------------------------------------------------------------------------------------------------------
 
         AnimationChannel onIceAnim;
-        onIceAnim = new AnimationChannel("onIce.png", 4,13,28,Duration.seconds(0.5),0,3);
+        onIceAnim = new AnimationChannel("onIce.png", 4,12,26,Duration.seconds(0.3),0,3);
+
         //Collision handling for  player and ice
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ICE) {
 
@@ -907,6 +907,7 @@ public class Inside extends GameApplication {
             }
         });
 
+
         //-------------------------------------------------------------------------------------------------------------
         //DOORS--------------------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
@@ -1178,7 +1179,6 @@ public class Inside extends GameApplication {
                 //Collision handling for  playerFound and water
                 //getPlayerInventory().add("WATERBOOTS");
                 getPlayerInventory().add("YELLOWKEY");
-                getPlayerInventory().add("WATERBOOTS");
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 yellowKey.removeFromWorld();
                 addInventoryToUI();
@@ -1229,7 +1229,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd(){
                 super.onActionEnd();
-
             }
 
         }, KeyCode.W);
@@ -1267,6 +1266,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd(){
                 super.onActionEnd();
+
             }
         }, KeyCode.S);
 
@@ -1302,7 +1302,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd(){
                 super.onActionEnd();
-
             }
 
         }, KeyCode.A);
@@ -1339,7 +1338,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onActionEnd() {
                 super.onActionEnd();
-
             }
         }, KeyCode.D);
 

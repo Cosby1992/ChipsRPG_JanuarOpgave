@@ -1,13 +1,14 @@
 package sample.Control;
 
+import com.almasb.fxgl.app.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
+import com.almasb.fxgl.time.LocalTimer;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
-import sample.Inside;
 
 import java.util.ArrayList;
 
@@ -24,46 +25,50 @@ public class PlayerControl extends Component {
     private boolean wallHit = false;
 
     private AnimatedTexture texture;
-    private AnimationChannel animIdleForward;
+    private AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
     private AnimationChannel animForward, animBackward, animLeft, animRight, inWaterUp, inWaterDown, inWaterLeft, inWaterRight, onIceAnim;
 
     //Constructor
     public PlayerControl() {
         // initializing AnimationChannels to use with walking and swimming
 
-        animForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
-        animBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
-        animLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
-        animRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 7);
+        animForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(0.5), 0, 7);
+        animBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(0.5), 0, 7);
+        animLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(0.5), 0, 7);
+        animRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(0.5), 0, 7);
+
+        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        animIdleRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
 
         inWaterUp = new AnimationChannel("inWaterUp.png",2,18,19,Duration.seconds(0.5),0,1);
         inWaterDown = new AnimationChannel("inWaterDown.png",2,18,19,Duration.seconds(0.5),0,1);
         inWaterLeft = new AnimationChannel("inWaterLeft.png",2,18,19,Duration.seconds(0.5),0,1);
         inWaterRight = new AnimationChannel("inWaterRight.png",2,18,19,Duration.seconds(0.5),0,1);
 
-        onIceAnim = new AnimationChannel("onIce.png", 4,13,28,Duration.seconds(0.5),0,3);
-
-
-        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
+        onIceAnim = new AnimationChannel("onIce.png", 4,11,26,Duration.seconds(0.5),0,3);
 
         texture = new AnimatedTexture(animIdleForward);
 
-        System.out.println("playerControl");
+        System.out.println("playerControl initialized");
     }
 
     @Override
     public void onAdded() {
         entity.setViewWithBBox(texture);
 
-        System.out.println("on added");
+        System.out.println("player - on added");
 
     }
+
 
     @Override
     public void onUpdate(double tpf) {
 
         if(isCanMove() && !isInWater() && !isOnIce() && !isWallHit()){
             setSpeed(100);
+            setIdleTexture(FXGL.getInput());
         } else if(isInWater() && isCanMove() && !isOnIce()){
             setSpeed(50);
         } else if (onIce && canMove && !inWater){
@@ -90,9 +95,8 @@ public class PlayerControl extends Component {
             setLastMove("down");
         }
 
-        //TODO: Idle textures onUpdate.
-
     }
+
 
     public void moveRight(double tpf) {
         if (!isOnIce()) {
@@ -102,7 +106,7 @@ public class PlayerControl extends Component {
             } else if (!isInWater() && getTexture().getAnimationChannel() != animRight) {
                 getTexture().loopAnimationChannel(animRight);
             }
-
+            setLastMove("right");
         }
     }
 
@@ -158,15 +162,7 @@ public class PlayerControl extends Component {
         return inventory;
     }
 
-
-    private void setIdleTexture(Input input){
-        AnimationChannel animIdleForward, animIdleBackward, animIdleLeft, animIdleRight;
-        animIdleForward = new AnimationChannel("newUpAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleBackward = new AnimationChannel("newDownAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleLeft = new AnimationChannel("newLeftAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-        animIdleRight = new AnimationChannel("newRightAnimated.png", 8, 15, 26, Duration.seconds(1), 0, 0);
-
-
+    public void setIdleTexture(Input input){
         if(!input.isHeld(KeyCode.W)
                 &&!input.isHeld(KeyCode.A)
                 &&!input.isHeld(KeyCode.D)
@@ -180,8 +176,6 @@ public class PlayerControl extends Component {
             }
         }
     }
-
-
 
     //getters and setters
     public int getSpeed() {

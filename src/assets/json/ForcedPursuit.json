@@ -2602,6 +2602,17 @@
                  "width":32,
                  "x":800,
                  "y":1056
+                }, 
+                {
+                 "height":32,
+                 "id":239,
+                 "name":"",
+                 "rotation":0,
+                 "type":"iceBoots",
+                 "visible":true,
+                 "width":32,
+                 "x":608,
+                 "y":416
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -2610,7 +2621,7 @@
          "y":0
         }],
  "nextlayerid":3,
- "nextobjectid":239,
+ "nextobjectid":240,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.2.1",

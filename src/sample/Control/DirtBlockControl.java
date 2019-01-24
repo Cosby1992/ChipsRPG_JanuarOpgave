@@ -16,6 +16,7 @@ public class DirtBlockControl extends Component {
     }
 
 
+
     public int getSpeed() {
         return speed;
     }
