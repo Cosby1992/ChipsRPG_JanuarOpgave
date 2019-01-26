@@ -6,7 +6,6 @@ import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
-import com.almasb.fxgl.time.LocalTimer;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
 
@@ -96,7 +95,6 @@ public class PlayerControl extends Component {
         }
 
     }
-
 
     public void moveRight(double tpf) {
         if (!isOnIce()) {

@@ -19,11 +19,9 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import sample.Control.DirtBlockControl;
 import sample.Control.PlayerControl;
-import sample.Factories.CollectiblesFactory;
+import sample.Control.TankControl;
+import sample.Factories.*;
 import sample.Control.EnemySpiderControl;
-import sample.Factories.EnvironmentalFactory;
-import sample.Factories.EnemyFactory;
-import sample.Factories.PlayerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +52,7 @@ public class Inside extends GameApplication {
 
 
     private  ArrayList<String> levels = new ArrayList<>(){{
+        add("tankTryOut.json");
         add("ForcedPursuit.json");
         add("elements_test.json");
         add("testMap2000.json");
@@ -343,7 +342,138 @@ public class Inside extends GameApplication {
         });
 
 
-        //SPEEDBLOCKS
+        //-------------------------------------------------------------------------------------------------------------
+        //TANKS AND TANKACTIVATOR--------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKUP, WALL) {
+            @Override
+            protected void onCollisionBegin(Entity tankUp, Entity wall) {
+                super.onCollisionBegin(tankUp, wall);
+                tankUp.getComponent(TankControl.class).setActivated(false);
+                tankUp.getComponent(TankControl.class).setWallHit(true);
+                tankUp.getComponent(TankControl.class).setSpeed(-tankUp.getComponent(TankControl.class).getSpeed());
+            }
+
+            @Override
+            protected void onCollision(Entity tankUp, Entity wall) {
+                super.onCollision(tankUp, wall);
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity tankUp, Entity wall) {
+                super.onCollisionEnd(tankUp, wall);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKDOWN, WALL) {
+            @Override
+            protected void onCollisionBegin(Entity tankDown, Entity wall) {
+                super.onCollisionBegin(tankDown, wall);
+                tankDown.getComponent(TankControl.class).setActivated(false);
+                tankDown.getComponent(TankControl.class).setWallHit(true);
+                tankDown.getComponent(TankControl.class).setSpeed(-tankDown.getComponent(TankControl.class).getSpeed());
+
+            }
+
+            @Override
+            protected void onCollision(Entity tankDown, Entity wall) {
+                super.onCollision(tankDown, wall);
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity tankDown, Entity wall) {
+                super.onCollisionEnd(tankDown, wall);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKLEFT, WALL) {
+            @Override
+            protected void onCollisionBegin(Entity tankLeft, Entity wall) {
+                super.onCollisionBegin(tankLeft, wall);
+                tankLeft.getComponent(TankControl.class).setActivated(false);
+                tankLeft.getComponent(TankControl.class).setWallHit(true);
+                tankLeft.getComponent(TankControl.class).setSpeed(-tankLeft.getComponent(TankControl.class).getSpeed());
+            }
+
+            @Override
+            protected void onCollision(Entity tankLeft, Entity wall) {
+                super.onCollision(tankLeft, wall);
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity tankLeft, Entity wall) {
+                super.onCollisionEnd(tankLeft, wall);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKRIGHT, WALL) {
+            @Override
+            protected void onCollisionBegin(Entity tankRight, Entity wall) {
+                super.onCollisionBegin(tankRight, wall);
+                tankRight.getComponent(TankControl.class).setActivated(false);
+                tankRight.getComponent(TankControl.class).setWallHit(true);
+                tankRight.getComponent(TankControl.class).setSpeed(-tankRight.getComponent(TankControl.class).getSpeed());
+            }
+
+            @Override
+            protected void onCollision(Entity tankRight, Entity wall) {
+                super.onCollision(tankRight, wall);
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity tankRight, Entity wall) {
+                super.onCollisionEnd(tankRight, wall);
+            }
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKACTIVATOR, PLAYER) {
+            @Override
+            protected void onCollisionBegin(Entity tankActivator, Entity player) {
+                super.onCollisionBegin(tankActivator, player);
+                List<Entity> upTanks = getGameWorld().getEntitiesByType(TANKUP);
+                List<Entity> downTanks = getGameWorld().getEntitiesByType(TANKDOWN);
+                List<Entity> leftTanks = getGameWorld().getEntitiesByType(TANKLEFT);
+                List<Entity> rightTanks = getGameWorld().getEntitiesByType(TANKRIGHT);
+
+                for (Entity tank : upTanks) {
+                    tank.getComponent(TankControl.class).setActivated(true);
+                    tank.getComponent(TankControl.class).setWallHit(false);
+                }
+
+                for (Entity tank : downTanks) {
+                    tank.getComponent(TankControl.class).setActivated(true);
+                    tank.getComponent(TankControl.class).setWallHit(false);
+                }
+
+                for (Entity tank : leftTanks) {
+                    tank.getComponent(TankControl.class).setActivated(true);
+                    tank.getComponent(TankControl.class).setWallHit(false);
+                }
+
+                for (Entity tank : rightTanks) {
+                    tank.getComponent(TankControl.class).setActivated(true);
+                    tank.getComponent(TankControl.class).setWallHit(false);
+                }
+
+            }
+
+            @Override
+            protected void onCollision(Entity tankActivator, Entity player) {
+                super.onCollision(tankActivator, player);
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity tankActivator, Entity player) {
+                super.onCollisionEnd(tankActivator, player);
+            }
+        });
+
+
+        //-------------------------------------------------------------------------------------------------------------
+        //SPEEDBLOCKS--------------------------------------------------------------------------------------------------
+        //-------------------------------------------------------------------------------------------------------------
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER,SPEEDUP) {
             @Override
             protected void onCollisionBegin(Entity player, Entity speedUp) {
@@ -444,10 +574,10 @@ public class Inside extends GameApplication {
             }
         });
 
+
         //-------------------------------------------------------------------------------------------------------------
         //ICE AND ICE-CORNERS------------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
-
         AnimationChannel onIceAnim;
         onIceAnim = new AnimationChannel("onIce.png", 4,12,26,Duration.seconds(0.3),0,3);
 
@@ -1702,6 +1832,7 @@ try {
         getGameWorld().addEntityFactory(new EnvironmentalFactory());
         getGameWorld().addEntityFactory(new CollectiblesFactory()); // adding data from tiledMap data (see class)
         getGameWorld().addEntityFactory(new EnemyFactory());
+        getGameWorld().addEntityFactory(new UtilityFactory());
 
         //setting level from json file from tiledMap
         System.out.println("Setting Level from map");
