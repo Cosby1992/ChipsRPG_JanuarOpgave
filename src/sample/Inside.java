@@ -12,10 +12,15 @@ import com.almasb.fxgl.texture.AnimationChannel;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
+import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import sample.Control.DirtBlockControl;
 import sample.Control.PlayerControl;
@@ -37,8 +42,6 @@ import static sample.EntityTypes.Type.*;
 
 
 
-//"Inside" class
-
 public class Inside extends GameApplication {
 
     //private datafields for main class (inside)
@@ -52,6 +55,7 @@ public class Inside extends GameApplication {
 
 
     private  ArrayList<String> levels = new ArrayList<>(){{
+        add("Lesson_1.json");
         add("tankTryOut.json");
         add("ForcedPursuit.json");
         add("elements_test.json");
@@ -124,6 +128,25 @@ public class Inside extends GameApplication {
 
     }
 
+
+    private Text innerShadowFX(String text, int xTranslation, int yTranslation){
+        InnerShadow is = new InnerShadow();
+        is.setOffsetX(1.0f);
+        is.setOffsetY(1.0f);
+
+        Text t = new Text();
+        t.setEffect(is);
+        t.setText(text);
+        t.setFill(Color.YELLOW);
+        t.setFont(Font.font(null, FontWeight.BOLD, 60));
+        t.setTextAlignment(TextAlignment.CENTER);
+
+        t.setTranslateX(xTranslation);
+        t.setTranslateY(yTranslation);
+
+        return t;
+    }
+
     //Collision handling (physics)
     @Override
     protected void initPhysics() {
@@ -159,39 +182,7 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollisionBegin(Entity player, Entity wall) {
-
-
-                if(player.getComponent(PlayerControl.class).isCanMove()){
-                    player.getComponent(PlayerControl.class).setCanMove(false);
-                }
-
-                Point2D point = wall.getCenter();
-                player.translateTowards(point, -50*tpf());
-
-                if(player.getComponent(PlayerControl.class).isOnIce()){
-                   // player.getComponent(PlayerControl.class).setCanMove(true);
-                    switch(player.getComponent(PlayerControl.class).getLastMove()){
-                        case "up":
-                            player.getComponent(PlayerControl.class).moveDown(tpf());
-                            player.getComponent(PlayerControl.class).setLastMove("down");
-                            break;
-                        case "down":
-                            player.getComponent(PlayerControl.class).moveUp(tpf());
-                            player.getComponent(PlayerControl.class).setLastMove("up");
-                            break;
-                        case "left":
-                            player.getComponent(PlayerControl.class).moveRight(tpf());
-                            player.getComponent(PlayerControl.class).setLastMove("right");
-                            break;
-                        case "right":
-                            player.getComponent(PlayerControl.class).moveLeft(tpf());
-                            player.getComponent(PlayerControl.class).setLastMove("left");
-                            break;
-                    }
-                   // player.getComponent(PlayerControl.class).setCanMove(false);
-                }
-
-
+                wallCollisionBegin(player, wall);
             }
 
             @Override
@@ -201,8 +192,7 @@ public class Inside extends GameApplication {
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
-                Point2D point = wall.getCenter();
-                player.translateTowards(point, -100*tpf());
+                player.translateTowards(wall.getCenter(), -100*tpf());
 
 
             }
@@ -282,13 +272,15 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity wall, Entity dirtBlock) {
                 super.onCollisionBegin(wall, dirtBlock);
-                dirtBlock.translateTowards(wall.getCenter(),-0*tpf());
+
+
             }
 
             @Override
             protected void onCollision(Entity wall, Entity dirtBlock) {
                 super.onCollision(wall, dirtBlock);
                 dirtBlock.translateTowards(wall.getCenter(),-101*tpf());
+
             }
 
             @Override
@@ -341,10 +333,151 @@ public class Inside extends GameApplication {
             }
         });
 
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, QUESTIONBLOCK) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity questionBlock) {
+                super.onCollisionBegin(player, questionBlock);
+
+                Text questionText;
+
+                switch (getLevel()) {
+                    case 0: questionText = innerShadowFX("COLLECT CHIPS TO \nGET THROUGH THE PORTAL\nUSE KEYS TO OPEN DOORS", 250, 200);
+                            getGameScene().addUINode(questionText);
+                            break;
+                    case 1: break;
+                    default:
+                        System.out.println("default");
+                        break;
+
+                }
+
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity questionBlock) {
+                super.onCollisionEnd(player, questionBlock);
+                addInventoryToUI();
+            }
+        });
+
 
         //-------------------------------------------------------------------------------------------------------------
         //TANKS AND TANKACTIVATOR--------------------------------------------------------------------------------------
         //-------------------------------------------------------------------------------------------------------------
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, TANKUP) {
+
+            // order of types (enum) is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity tankUp) {
+                wallCollisionBegin(player, tankUp);
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity tankUp) {
+
+                if (player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
+
+                player.translateTowards(tankUp.getCenter(), -100*tpf());
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity wall) {
+
+                //playerFound.getComponent(PlayerControl.class).setCanMove(true);
+
+            }
+
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, TANKDOWN) {
+
+            // order of types (enum) is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity tankDown) {
+                wallCollisionBegin(player, tankDown);
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity tankDown) {
+
+                if (player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
+
+                player.translateTowards(tankDown.getCenter(), -100*tpf());
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity wall) {
+
+                //playerFound.getComponent(PlayerControl.class).setCanMove(true);
+
+            }
+
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, TANKLEFT) {
+
+            // order of types (enum) is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity tankLeft) {
+                wallCollisionBegin(player, tankLeft);
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity tankLeft) {
+
+                if (player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
+
+                player.translateTowards(tankLeft.getCenter(), -100*tpf());
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity wall) {
+
+                //playerFound.getComponent(PlayerControl.class).setCanMove(true);
+
+            }
+
+        });
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, TANKRIGHT) {
+
+            // order of types (enum) is the same as passed into the constructor
+
+            @Override
+            protected void onCollisionBegin(Entity player, Entity tankRight) {
+                wallCollisionBegin(player, tankRight);
+            }
+
+            @Override
+            protected void onCollision(Entity player, Entity tankRight) {
+
+                if (player.getComponent(PlayerControl.class).isCanMove()){
+                    player.getComponent(PlayerControl.class).setCanMove(false);
+                }
+
+                player.translateTowards(tankRight.getCenter(), -100*tpf());
+            }
+
+            @Override
+            protected void onCollisionEnd(Entity player, Entity wall) {
+
+                //playerFound.getComponent(PlayerControl.class).setCanMove(true);
+
+            }
+
+        });
+
+
+
 
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(TANKUP, WALL) {
             @Override
@@ -1171,7 +1304,10 @@ public class Inside extends GameApplication {
                     getGameState().increment("points", 5);
                     player.getComponent(PlayerControl.class).setCanMove(true);
                     greenDoor.removeFromWorld();
-                    getPlayerInventory().remove("GREENKEY");
+
+                    //Green Key is special for not being one use only!
+                    //getPlayerInventory().remove("GREENKEY");
+
                     addInventoryToUI();
 
                     for (String aPlayerInventory : getPlayerInventory()) {
@@ -1813,6 +1949,39 @@ try {
     */
     }
 
+
+    private void wallCollisionBegin(Entity player, Entity entity){
+
+        if(player.getComponent(PlayerControl.class).isCanMove()){
+            player.getComponent(PlayerControl.class).setCanMove(false);
+        }
+
+        player.translateTowards(entity.getCenter(), -50*tpf());
+
+        if(player.getComponent(PlayerControl.class).isOnIce()){
+            // player.getComponent(PlayerControl.class).setCanMove(true);
+            switch(player.getComponent(PlayerControl.class).getLastMove()){
+                case "up":
+                    player.getComponent(PlayerControl.class).moveDown(tpf());
+                    player.getComponent(PlayerControl.class).setLastMove("down");
+                    break;
+                case "down":
+                    player.getComponent(PlayerControl.class).moveUp(tpf());
+                    player.getComponent(PlayerControl.class).setLastMove("up");
+                    break;
+                case "left":
+                    player.getComponent(PlayerControl.class).moveRight(tpf());
+                    player.getComponent(PlayerControl.class).setLastMove("right");
+                    break;
+                case "right":
+                    player.getComponent(PlayerControl.class).moveLeft(tpf());
+                    player.getComponent(PlayerControl.class).setLastMove("left");
+                    break;
+            }
+            // player.getComponent(PlayerControl.class).setCanMove(false);
+        }
+
+    }
 
     //Main method (not important here)
     public static void main(String[] args) {
