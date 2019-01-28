@@ -2,6 +2,7 @@ package sample;
 
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.entity.view.EntityView;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
@@ -12,17 +13,18 @@ import com.almasb.fxgl.texture.AnimationChannel;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
 import javafx.scene.effect.InnerShadow;
+import javafx.scene.effect.Shadow;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
-import sample.Control.DirtBlockControl;
 import sample.Control.PlayerControl;
 import sample.Control.TankControl;
 import sample.Factories.*;
@@ -33,7 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static sample.EntityTypes.Type.*;
+import static sample.EntityTypes.PLAYER;
+import static sample.EntityTypes.*;
 
 //Player texture size 16*29 px.
 //Animated texture size 128*29 px. (frames = 8)
@@ -46,16 +49,14 @@ public class Inside extends GameApplication {
 
     //private datafields for main class (inside)
     private Entity playerFound;
-    private Entity enemyTest;
-    private Point2D playerPosition;
     private ArrayList<String> playerInventory;
-    private AnimatedTexture texture;
     private InGamePanel panel;
     private int speed = 100;
 
 
     private  ArrayList<String> levels = new ArrayList<>(){{
         add("Lesson_1.json");
+        add("dig_and_grow.json");
         add("tankTryOut.json");
         add("ForcedPursuit.json");
         add("elements_test.json");
@@ -129,20 +130,27 @@ public class Inside extends GameApplication {
     }
 
 
-    private Text innerShadowFX(String text, int xTranslation, int yTranslation){
-        InnerShadow is = new InnerShadow();
-        is.setOffsetX(1.0f);
-        is.setOffsetY(1.0f);
+    private Text innerShadowPlusGlowFX(String text){
+
+        Glow g = new Glow();
+        g.setLevel(1.0);
+
+        DropShadow s = new DropShadow();
+        s.setInput(g);
+        s.setColor(Color.BLACK);
+        s.setRadius(2);
+        s.setSpread(0.3);
 
         Text t = new Text();
-        t.setEffect(is);
+        t.setEffect(s);
         t.setText(text);
-        t.setFill(Color.YELLOW);
-        t.setFont(Font.font(null, FontWeight.BOLD, 60));
+        t.setFill(Color.GOLD);
+        t.setFont(Font.font(null, FontWeight.BOLD, 35));
         t.setTextAlignment(TextAlignment.CENTER);
 
-        t.setTranslateX(xTranslation);
-        t.setTranslateY(yTranslation);
+        t.setTranslateX(getGameScene().getWidth()/2 - t.getLayoutBounds().getWidth()/2);
+
+        t.setTranslateY(getGameScene().getHeight()/2-t.getLayoutBounds().getHeight()/2);
 
         return t;
     }
@@ -151,7 +159,6 @@ public class Inside extends GameApplication {
     @Override
     protected void initPhysics() {
 
-        setTexture(getPlayer().getComponent(PlayerControl.class).getTexture());
         setPlayerInventory(getPlayer().getComponent(PlayerControl.class).getInventory());
 
         //-------------------------------------------------------------------------------------------------------------
@@ -187,14 +194,14 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity wall) {
-
+/*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
                 player.translateTowards(wall.getCenter(), -100*tpf());
 
-
+*/
             }
 
             @Override
@@ -333,6 +340,17 @@ public class Inside extends GameApplication {
             }
         });
 
+
+
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, RETRACTEDWALL) {
+            @Override
+            protected void onCollisionEnd(Entity player, Entity retractedWall) {
+                super.onCollisionEnd(player, retractedWall);
+                getGameWorld().spawn("wall", retractedWall.getX(), retractedWall.getY());
+                retractedWall.setViewFromTexture("wall.png");
+            }
+        });
+
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, QUESTIONBLOCK) {
             @Override
             protected void onCollisionBegin(Entity player, Entity questionBlock) {
@@ -341,7 +359,7 @@ public class Inside extends GameApplication {
                 Text questionText;
 
                 switch (getLevel()) {
-                    case 0: questionText = innerShadowFX("COLLECT CHIPS TO \nGET THROUGH THE PORTAL\nUSE KEYS TO OPEN DOORS", 250, 200);
+                    case 0: questionText = innerShadowPlusGlowFX("COLLECT CHIPS TO \nGET THROUGH THE PORTAL\nUSE KEYS TO OPEN DOORS");
                             getGameScene().addUINode(questionText);
                             break;
                     case 1: break;
@@ -375,12 +393,13 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity tankUp) {
-
+/*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
                 player.translateTowards(tankUp.getCenter(), -100*tpf());
+                */
             }
 
             @Override
@@ -403,12 +422,13 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity tankDown) {
-
+/*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
                 player.translateTowards(tankDown.getCenter(), -100*tpf());
+                */
             }
 
             @Override
@@ -431,12 +451,13 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity tankLeft) {
-
+/*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
                 player.translateTowards(tankLeft.getCenter(), -100*tpf());
+                */
             }
 
             @Override
@@ -459,12 +480,13 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollision(Entity player, Entity tankRight) {
-
+/*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
 
                 player.translateTowards(tankRight.getCenter(), -100*tpf());
+                */
             }
 
             @Override
@@ -1187,7 +1209,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity redDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+               // player.getComponent(PlayerControl.class).setCanMove(true);
 
                 if(getPlayerInventory().contains("REDKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
@@ -1202,7 +1224,7 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("REDKEY")){
                     getGameState().increment("points", 5);
-                    player.getComponent(PlayerControl.class).setCanMove(true);
+                   // player.getComponent(PlayerControl.class).setCanMove(true);
                     redDoor.removeFromWorld();
                     getPlayerInventory().remove("REDKEY");
                     addInventoryToUI();
@@ -1212,7 +1234,7 @@ public class Inside extends GameApplication {
                     }
 
                 } else {
-                    player.getComponent(PlayerControl.class).setCanMove(false);
+                   // player.getComponent(PlayerControl.class).setCanMove(false);
 
                     Point2D point = redDoor.getCenter();
                     player.translateTowards(point, -10*tpf());
@@ -1223,7 +1245,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionEnd(Entity player, Entity redDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+                //player.getComponent(PlayerControl.class).setCanMove(true);
 
             }
 
@@ -1237,7 +1259,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity blueDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+               // player.getComponent(PlayerControl.class).setCanMove(true);
 
                 if(getPlayerInventory().contains("BLUEKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
@@ -1252,7 +1274,7 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("BLUEKEY")){
                     getGameState().increment("points", 5);
-                    player.getComponent(PlayerControl.class).setCanMove(true);
+                    //player.getComponent(PlayerControl.class).setCanMove(true);
                     blueDoor.removeFromWorld();
                     getPlayerInventory().remove("BLUEKEY");
                     addInventoryToUI();
@@ -1262,7 +1284,7 @@ public class Inside extends GameApplication {
                     }
 
                 } else {
-                    player.getComponent(PlayerControl.class).setCanMove(false);
+                   // player.getComponent(PlayerControl.class).setCanMove(false);
 
                     Point2D point = blueDoor.getCenter();
                     player.translateTowards(point, -10*tpf());
@@ -1273,7 +1295,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionEnd(Entity player, Entity blueDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+               // player.getComponent(PlayerControl.class).setCanMove(true);
 
             }
 
@@ -1287,7 +1309,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity greenDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+               // player.getComponent(PlayerControl.class).setCanMove(true);
 
                 if(getPlayerInventory().contains("GREENKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
@@ -1302,7 +1324,7 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("GREENKEY")){
                     getGameState().increment("points", 5);
-                    player.getComponent(PlayerControl.class).setCanMove(true);
+                    //player.getComponent(PlayerControl.class).setCanMove(true);
                     greenDoor.removeFromWorld();
 
                     //Green Key is special for not being one use only!
@@ -1315,7 +1337,7 @@ public class Inside extends GameApplication {
                     }
 
                 } else {
-                    player.getComponent(PlayerControl.class).setCanMove(false);
+                    //player.getComponent(PlayerControl.class).setCanMove(false);
 
                     Point2D point = greenDoor.getCenter();
                     player.translateTowards(point, -10*tpf());
@@ -1326,7 +1348,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionEnd(Entity player, Entity greenDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+               // player.getComponent(PlayerControl.class).setCanMove(true);
 
             }
 
@@ -1340,7 +1362,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity yellowDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+                //player.getComponent(PlayerControl.class).setCanMove(true);
 
                 if(getPlayerInventory().contains("YELLOWKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
@@ -1356,7 +1378,7 @@ public class Inside extends GameApplication {
                 if(getPlayerInventory().contains("YELLOWKEY")){
                     getGameState().increment("points", 5);
 
-                    player.getComponent(PlayerControl.class).setCanMove(true);
+                   // player.getComponent(PlayerControl.class).setCanMove(true);
                     yellowDoor.removeFromWorld();
                     getPlayerInventory().remove("YELLOWKEY");
                     addInventoryToUI();
@@ -1366,7 +1388,7 @@ public class Inside extends GameApplication {
                     }
 
                 } else {
-                    player.getComponent(PlayerControl.class).setCanMove(false);
+                    //player.getComponent(PlayerControl.class).setCanMove(false);
 
                     Point2D point = yellowDoor.getCenter();
                     player.translateTowards(point, -10*tpf());
@@ -1377,7 +1399,7 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionEnd(Entity player, Entity yellowDoor) {
 
-                player.getComponent(PlayerControl.class).setCanMove(true);
+                //player.getComponent(PlayerControl.class).setCanMove(true);
 
             }
 
@@ -1486,9 +1508,9 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+                //if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).moveUp(tpf());
-                }
+                //}
 
             }
 
@@ -1524,9 +1546,9 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+               // if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).moveDown(tpf());
-                }
+                //}
             }
 
             @Override
@@ -1559,9 +1581,9 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+               // if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).moveLeft(tpf());
-                }
+                //}
 
             }
 
@@ -1596,9 +1618,9 @@ public class Inside extends GameApplication {
             protected void onAction() {
                 super.onAction();
 
-                if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
+               // if(getPlayer().getComponent(PlayerControl.class).isCanMove()) {
                     getPlayer().getComponent(PlayerControl.class).moveRight(tpf());
-                }
+                //}
             }
 
             @Override
@@ -1952,9 +1974,9 @@ try {
 
     private void wallCollisionBegin(Entity player, Entity entity){
 
-        if(player.getComponent(PlayerControl.class).isCanMove()){
-            player.getComponent(PlayerControl.class).setCanMove(false);
-        }
+        //if(player.getComponent(PlayerControl.class).isCanMove()){
+            //player.getComponent(PlayerControl.class).setCanMove(false);
+        //}
 
         player.translateTowards(entity.getCenter(), -50*tpf());
 
@@ -2010,7 +2032,7 @@ try {
         //resetting chipsLeft value
         getGameState().setValue("chipsLeft", 0);
 
-        //finding playerFound inside gameWorld
+        //finding player inside gameWorld
         System.out.println("Finding player on map");
         ArrayList<Entity> entities = getGameWorld().getEntities();
         for (Entity entity : entities) {
@@ -2020,9 +2042,6 @@ try {
                 getGameState().increment("chipsLeft", 1);
             }
         }
-
-        //setting Player position (used elsewhere)
-        setPlayerPosition(new Point2D(getPlayer().getX(), getPlayer().getY()));
 
 /*
         ArrayList<Entity> enemyTestList = getGameWorld().getEntities();
@@ -2039,10 +2058,10 @@ try {
         viewport.setZoom(2.2);
 
         //place camera and set to follow playerFound
-        viewport.bindToEntity(getPlayer(),300,160);
+        viewport.bindToEntity(getPlayer(),282,140);
 
         //prints playerinfo to console
-        getPlayer().getComponent(PlayerControl.class).playerInfo();
+        //getPlayer().getComponent(PlayerControl.class).playerInfo();
 
         //Emptying player inventory
         setPlayerInventory(new ArrayList<>());
@@ -2065,16 +2084,6 @@ try {
         this.playerFound = playerFound;
     }
 
-    private AnimatedTexture getTexture() {
-        return texture;
-    }
-
-    private void setTexture(AnimatedTexture texture) {
-        this.texture = texture;
-    }
-
-
-
     private ArrayList<String> getPlayerInventory() {
         return playerInventory;
     }
@@ -2083,20 +2092,8 @@ try {
         this.playerInventory = playerInventory;
     }
 
-    public Point2D getPlayerPosition() {
-        return playerPosition;
-    }
-
-    private void setPlayerPosition(Point2D playerPosition) {
-        this.playerPosition = playerPosition;
-    }
-
     private ArrayList<String> getLevels() {
         return levels;
-    }
-
-    public void setLevels(ArrayList<String> levels) {
-        this.levels = levels;
     }
 
     private int getInventoryIULastPosition() {

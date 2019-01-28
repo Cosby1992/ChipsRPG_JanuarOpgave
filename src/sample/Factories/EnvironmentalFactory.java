@@ -8,7 +8,7 @@ import javafx.util.Duration;
 import sample.Control.DirtBlockControl;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
-import static sample.EntityTypes.Type.*;
+import static sample.EntityTypes.*;
 
 
 public class EnvironmentalFactory implements EntityFactory {
@@ -19,7 +19,7 @@ public class EnvironmentalFactory implements EntityFactory {
         return Entities.builder()
                 .type(WALL)
                 .from(data)
-                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .bbox(new HitBox(BoundingShape.box(32, 32)))
                 .with(new CollidableComponent(true))
                 .build();
     }
@@ -163,9 +163,19 @@ public class EnvironmentalFactory implements EntityFactory {
         return build;
     }
 
+    @Spawns("retractedWall")
+    public static Entity newRetractedWall(SpawnData data){
+        System.out.println("a retractedWall object created");
+        return Entities.builder()
+                .type(RETRACTEDWALL)
+                .from(data)
+                .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                .with(new CollidableComponent(true))
+                .build();
+    }
 
     @Spawns("?block")
-    public static Entity QuestionBlock(SpawnData data){
+    public static Entity questionBlock(SpawnData data){
         System.out.println("a new questionBlock object created");
         return Entities.builder()
                 .type(QUESTIONBLOCK)
@@ -174,6 +184,8 @@ public class EnvironmentalFactory implements EntityFactory {
                 .with(new CollidableComponent(true))
                 .build();
     }
+
+
 
 
     @Spawns("")

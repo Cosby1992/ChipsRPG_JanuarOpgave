@@ -6,7 +6,7 @@ import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import sample.Control.EnemySpiderControl;
 
-import static sample.EntityTypes.Type.ENEMYTEST;
+import static sample.EntityTypes.ENEMYTEST;
 
 public class EnemyFactory implements EntityFactory {
 

@@ -6,7 +6,7 @@ import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.util.Duration;
 
-import static sample.EntityTypes.Type.*;
+import static sample.EntityTypes.*;
 
 
 //Tank textureUP size 29 witdh, 30 heigh

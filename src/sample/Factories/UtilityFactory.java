@@ -6,7 +6,7 @@ import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import sample.Control.TankControl;
 
-import static sample.EntityTypes.Type.*;
+import static sample.EntityTypes.*;
 
 public class UtilityFactory implements EntityFactory {
 

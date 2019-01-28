@@ -10,7 +10,7 @@ import sample.Control.PlayerControl;
 import sample.Inside;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
-import static sample.EntityTypes.Type.*;
+import static sample.EntityTypes.*;
 
 //Player texture size 16*29 px.
 //Animated texture size 128*29 px. (frames = 8)
