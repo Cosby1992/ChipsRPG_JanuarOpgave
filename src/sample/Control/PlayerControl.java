@@ -8,6 +8,7 @@ import com.almasb.fxgl.entity.components.TypeComponent;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
+import com.almasb.fxgl.time.Timer;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.input.KeyCode;
@@ -18,12 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sample.EntityTypes.*;
+import sample.Inside;
 
-import static sample.EntityTypes.WALL;
+import static sample.EntityTypes.*;
 
 
 public class PlayerControl extends Component {
 
+    private Timer timer = new Timer();
     private PositionComponent position;
 
     private int speed = 100;
@@ -68,6 +71,8 @@ public class PlayerControl extends Component {
 
     @Override
     public void onAdded() {
+
+        inventory.clear();
         entity.setViewWithBBox(texture);
 
         System.out.println("player - on added");
@@ -77,17 +82,16 @@ public class PlayerControl extends Component {
 
     @Override
     public void onUpdate(double tpf) {
-/*
-        if(isCanMove() && !isInWater() && !isOnIce() && !isWallHit()){
+
+        if(!inWater && !onIce){
             setSpeed(100);
             setIdleTexture(FXGL.getInput());
-        } else if(isInWater() && isCanMove() && !isOnIce()){
+        } else if(inWater && !onIce){
             setSpeed(50);
-        } else if (onIce && canMove() && !inWater){
+        } else if (onIce && !inWater){
             setSpeed(220);
         } else{
             setSpeed(100);
-            setCanMove(true);
         }
 
 
@@ -106,7 +110,7 @@ public class PlayerControl extends Component {
             entity.translateY(speed * tpf);
             setLastMove("down");
         }
-*/
+
     }
 
     public void moveRight(double tpf) {
@@ -153,7 +157,6 @@ public class PlayerControl extends Component {
             } else if (!isInWater() && getTexture().getAnimationChannel() != animBackward){
                 getTexture().loopAnimationChannel(animBackward);
             }
-            System.out.println(canMove(new Point2D(0,32)));
         setLastMove("down");
         }
 
@@ -163,31 +166,29 @@ public class PlayerControl extends Component {
     private boolean canMove(Point2D direction) {
         Point2D newPosition = position.getValue().add(direction);
 
-        boolean wallHit = true;
+        boolean playerCanMove = true;
 
-        System.out.println(position + "     " + "canMove?");
-
-        List<Entity> e;
-        e = FXGL.getGameWorld().getEntitiesInRange(new Rectangle2D(newPosition.getX(),newPosition.getY(),16,28));
+        List<Entity> e = FXGL.getGameWorld().getEntitiesInRange(new Rectangle2D(newPosition.getX(),newPosition.getY(),14,26));
 
         for (Entity entity:e) {
-            if (entity.isType(WALL)){
-                wallHit = false;
+            if (entity.isType(WALL)
+                    || entity.isType(TANKUP)
+                    || entity.isType(TANKDOWN)
+                    || entity.isType(TANKLEFT)
+                    || entity.isType(TANKRIGHT)){
+                playerCanMove = false;
                 System.out.println(entity);
+            } if(entity.isType(REDDOOR) && !inventory.contains("REDKEY")
+            || entity.isType(BLUEDOOR) && !inventory.contains("BLUEKEY")
+            || entity.isType(YELLOWDOOR) && !inventory.contains("YELLOWKEY")
+            || entity.isType(GREENDOOR) && !inventory.contains("GREENKEY")){
+                FXGL.getAudioPlayer().playSound("Locked_Door.wav");
+                playerCanMove = false;
             }
         }
 
-        return wallHit;
+        return playerCanMove;
 
-/*
-        return FXGL.getGameWorld()
-                        .getEntitiesAt(newPosition)
-                        .stream()
-                        .filter(e -> e.hasComponent(TypeComponent.class))
-                        .map(e -> e.getComponent(TypeComponent.class))
-                        .noneMatch(type -> type.isType(WALL));
-
-                        */
     }
 
     //player inventory as ArrayList

@@ -45,6 +45,7 @@ import static sample.EntityTypes.*;
 
 
 
+@SuppressWarnings("Duplicates")
 public class Inside extends GameApplication {
 
     //private datafields for main class (inside)
@@ -177,7 +178,7 @@ public class Inside extends GameApplication {
                 getGameState().increment("points", 25);
                 getGameState().increment("chipsLeft", -1);
 
-                getAudioPlayer().playSound("Chip_Pickup.wav");
+                getAudioPlayer().playSound("chip_pickup.wav");
 
             }
         });
@@ -213,7 +214,7 @@ public class Inside extends GameApplication {
 
         });
 
-        //Collision handling for  playerFound and water
+        //Collision handling for  playerFound and
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, ENDZONE) {
 
             // order of types is the same as passed into the constructor
@@ -1146,6 +1147,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity iceBoots) {
 
                 getPlayerInventory().add(iceBoots.getType().toString());
+                getAudioPlayer().playSound("boots_pickup.wav");
                 iceBoots.removeFromWorld();
                 addInventoryToUI();
             }
@@ -1159,6 +1161,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity fireBoots) {
 
                 getPlayerInventory().add(fireBoots.getType().toString());
+                getAudioPlayer().playSound("boots_pickup.wav");
                 fireBoots.removeFromWorld();
                 addInventoryToUI();
             }
@@ -1172,6 +1175,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity waterBoots) {
 
                 getPlayerInventory().add("WATERBOOTS");
+                getAudioPlayer().playSound("boots_pickup.wav");
                 waterBoots.removeFromWorld();
                 addInventoryToUI();
 
@@ -1186,6 +1190,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity suckerBoots) {
 
                 getPlayerInventory().add("SUCKERBOOTS");
+                getAudioPlayer().playSound("boots_pickup.wav");
                 suckerBoots.removeFromWorld();
                 addInventoryToUI();
 
@@ -1213,8 +1218,6 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("REDKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
-                } else {
-                    getAudioPlayer().playSound("Locked_Door.wav");
                 }
 
             }
@@ -1232,14 +1235,7 @@ public class Inside extends GameApplication {
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
-
-                } else {
-                   // player.getComponent(PlayerControl.class).setCanMove(false);
-
-                    Point2D point = redDoor.getCenter();
-                    player.translateTowards(point, -10*tpf());
                 }
-
             }
 
             @Override
@@ -1263,8 +1259,6 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("BLUEKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
-                } else {
-                    getAudioPlayer().playSound("Locked_Door.wav");
                 }
 
             }
@@ -1283,11 +1277,6 @@ public class Inside extends GameApplication {
                         System.out.println(aPlayerInventory);
                     }
 
-                } else {
-                   // player.getComponent(PlayerControl.class).setCanMove(false);
-
-                    Point2D point = blueDoor.getCenter();
-                    player.translateTowards(point, -10*tpf());
                 }
 
             }
@@ -1313,8 +1302,6 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("GREENKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
-                } else {
-                    getAudioPlayer().playSound("Locked_Door.wav");
                 }
 
             }
@@ -1335,14 +1322,7 @@ public class Inside extends GameApplication {
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
-
-                } else {
-                    //player.getComponent(PlayerControl.class).setCanMove(false);
-
-                    Point2D point = greenDoor.getCenter();
-                    player.translateTowards(point, -10*tpf());
                 }
-
             }
 
             @Override
@@ -1366,8 +1346,6 @@ public class Inside extends GameApplication {
 
                 if(getPlayerInventory().contains("YELLOWKEY")){
                     getAudioPlayer().playSound("Open_Door.wav");
-                } else {
-                    getAudioPlayer().playSound("Locked_Door.wav");
                 }
 
             }
@@ -1386,12 +1364,6 @@ public class Inside extends GameApplication {
                     for (String aPlayerInventory : getPlayerInventory()) {
                         System.out.println(aPlayerInventory);
                     }
-
-                } else {
-                    //player.getComponent(PlayerControl.class).setCanMove(false);
-
-                    Point2D point = yellowDoor.getCenter();
-                    player.translateTowards(point, -10*tpf());
                 }
 
             }
@@ -1628,6 +1600,21 @@ public class Inside extends GameApplication {
                 super.onActionEnd();
             }
         }, KeyCode.D);
+
+        //restart level------------------------------------------------------------------------------------------------
+        input.addAction(new UserAction("Restart Level") {
+            @Override
+            protected void onActionBegin() {
+                super.onActionBegin();
+
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                startLevel(getLevel());
+
+
+            }
+        }, KeyCode.R);
 
 
         //WHEELMENU----------------------------------------------------------------------------------------------------
