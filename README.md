@@ -4,5 +4,5 @@ It's a top down PC puzzle game with multiple levels.
 
 This game is coded using AlmasB's FXGL (Java FX Game Libary)
 
-Language: Java
+Language: Java <br>
 Author: Cosby1992
