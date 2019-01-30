@@ -1,16 +1,14 @@
 
-package sample.Factories;
+package ChipsRPG.Factories;
 
 import com.almasb.fxgl.entity.*;
 import com.almasb.fxgl.entity.components.CollidableComponent;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import javafx.util.Duration;
-import sample.Control.PlayerControl;
-import sample.Inside;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.*;
 
 //Player texture size 16*29 px.
 //Animated texture size 128*29 px. (frames = 8)

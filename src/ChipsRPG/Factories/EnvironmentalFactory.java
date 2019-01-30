@@ -1,27 +1,37 @@
-package sample.Factories;
+package ChipsRPG.Factories;
 
 import com.almasb.fxgl.entity.*;
 import com.almasb.fxgl.entity.components.CollidableComponent;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import javafx.util.Duration;
-import sample.Control.DirtBlockControl;
+import ChipsRPG.Control.DirtBlockControl;
 
 import static com.almasb.fxgl.app.DSLKt.texture;
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.*;
 
 
 public class EnvironmentalFactory implements EntityFactory {
 
-    @Spawns("wall")
-    public static Entity newWall(SpawnData data){
+        @Spawns("wall")
+        public static Entity newWall (SpawnData data){
         System.out.println("New wall object was created");
-        return Entities.builder()
-                .type(WALL)
-                .from(data)
-                .bbox(new HitBox(BoundingShape.box(32, 32)))
-                .with(new CollidableComponent(true))
-                .build();
+
+        if(data.hasKey("width") && data.hasKey("height")) {
+            return Entities.builder()
+                    .type(WALL)
+                    .from(data)
+                    .bbox(new HitBox(BoundingShape.box(data.<Integer>get("width"), data.<Integer>get("height"))))
+                    .with(new CollidableComponent(true))
+                    .build();
+        } else {
+            return Entities.builder()
+                    .type(WALL)
+                    .from(data)
+                    .bbox(new HitBox(BoundingShape.box(32,32)))
+                    .with(new CollidableComponent(true))
+                    .build();
+        }
     }
 
 

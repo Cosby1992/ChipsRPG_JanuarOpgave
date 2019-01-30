@@ -1,12 +1,11 @@
-package sample.Control;
+package ChipsRPG.Control;
 
-import com.almasb.fxgl.app.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.util.Duration;
 
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.*;
 
 
 //Tank textureUP size 29 witdh, 30 heigh

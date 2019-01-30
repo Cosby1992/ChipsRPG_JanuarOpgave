@@ -1,4 +1,4 @@
-package sample.Control;
+package ChipsRPG.Control;
 
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.texture.AnimatedTexture;

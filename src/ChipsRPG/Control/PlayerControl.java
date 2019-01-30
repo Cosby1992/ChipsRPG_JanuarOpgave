@@ -1,10 +1,9 @@
-package sample.Control;
+package ChipsRPG.Control;
 
 import com.almasb.fxgl.app.FXGL;
 import com.almasb.fxgl.entity.Entity;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.entity.components.PositionComponent;
-import com.almasb.fxgl.entity.components.TypeComponent;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
@@ -13,15 +12,9 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.input.KeyCode;
 import javafx.util.Duration;
-import sample.EntityTypes;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import sample.EntityTypes.*;
-import sample.Inside;
-
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.*;
 
 
 public class PlayerControl extends Component {
@@ -89,28 +82,44 @@ public class PlayerControl extends Component {
         } else if(inWater && !onIce){
             setSpeed(50);
         } else if (onIce && !inWater){
-            setSpeed(220);
+            setSpeed(225);
         } else{
             setSpeed(100);
         }
 
 
-        if(isOnIce() && !getInventory().contains("ICEBOOTS"))
+        if(onIce && !getInventory().contains("ICEBOOTS"))
         //Ice movement (constant while on ice)
-        if (getLastMove().equalsIgnoreCase("right")){
+        if (lastMove.equalsIgnoreCase("right")){
             entity.translateX(speed * tpf);
             setLastMove("right");
-        } else if (getLastMove().equalsIgnoreCase("left")){
+        } else if (lastMove.equalsIgnoreCase("left")){
             entity.translateX(-speed * tpf);
             setLastMove("left");
-        } else if (getLastMove().equalsIgnoreCase("up")){
+        } else if (lastMove.equalsIgnoreCase("up")){
             entity.translateY(-speed * tpf);
             setLastMove("up");
-        } else if (getLastMove().equalsIgnoreCase("down")){
+        } else if (lastMove.equalsIgnoreCase("down")){
             entity.translateY(speed * tpf);
             setLastMove("down");
         }
-
+/*
+        if(onIce && wallHit && !getInventory().contains("ICEBOOTS"))
+            //Ice movement (constant while on ice)
+            if (lastMove.equalsIgnoreCase("right")){
+                entity.translateX(-speed * tpf);
+                setLastMove("left");
+            } else if (lastMove.equalsIgnoreCase("left")){
+                entity.translateX(speed * tpf);
+                setLastMove("right");
+            } else if (lastMove.equalsIgnoreCase("up")){
+                entity.translateY(speed * tpf);
+                setLastMove("down");
+            } else if (lastMove.equalsIgnoreCase("down")){
+                entity.translateY(-speed * tpf);
+                setLastMove("up");
+            }
+*/
     }
 
     public void moveRight(double tpf) {
@@ -163,7 +172,9 @@ public class PlayerControl extends Component {
 
     }
 
+    private int doorSoundCounter = 0;
     private boolean canMove(Point2D direction) {
+
         Point2D newPosition = position.getValue().add(direction);
 
         boolean playerCanMove = true;
@@ -176,13 +187,25 @@ public class PlayerControl extends Component {
                     || entity.isType(TANKDOWN)
                     || entity.isType(TANKLEFT)
                     || entity.isType(TANKRIGHT)){
+                doorSoundCounter = 0;
                 playerCanMove = false;
-                System.out.println(entity);
             } if(entity.isType(REDDOOR) && !inventory.contains("REDKEY")
             || entity.isType(BLUEDOOR) && !inventory.contains("BLUEKEY")
             || entity.isType(YELLOWDOOR) && !inventory.contains("YELLOWKEY")
             || entity.isType(GREENDOOR) && !inventory.contains("GREENKEY")){
-                FXGL.getAudioPlayer().playSound("Locked_Door.wav");
+                if (doorSoundCounter%20==0 || doorSoundCounter==0) {
+                    FXGL.getAudioPlayer().playSound("Locked_Door.wav");
+
+
+                }
+
+                System.out.println(doorSoundCounter);
+                doorSoundCounter++;
+
+                for (String s : inventory) {
+                    System.out.println("Inventory contains: " + s);
+                }
+
                 playerCanMove = false;
             }
         }
@@ -190,6 +213,9 @@ public class PlayerControl extends Component {
         return playerCanMove;
 
     }
+
+
+
 
     //player inventory as ArrayList
     public void addInventory(Entity collectableEntity){

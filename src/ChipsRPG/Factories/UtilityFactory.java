@@ -1,12 +1,12 @@
-package sample.Factories;
+package ChipsRPG.Factories;
 
 import com.almasb.fxgl.entity.*;
 import com.almasb.fxgl.entity.components.CollidableComponent;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
-import sample.Control.TankControl;
+import ChipsRPG.Control.TankControl;
 
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.*;
 
 public class UtilityFactory implements EntityFactory {
 

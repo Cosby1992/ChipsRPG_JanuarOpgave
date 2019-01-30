@@ -1,23 +1,19 @@
-package sample;
+package ChipsRPG;
 
+import ChipsRPG.Control.DirtBlockControl;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.entity.Entity;
-import com.almasb.fxgl.entity.view.EntityView;
 import com.almasb.fxgl.input.Input;
 import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.scene.Viewport;
 import com.almasb.fxgl.settings.GameSettings;
-import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
 import com.almasb.fxgl.texture.Texture;
 import com.almasb.fxgl.ui.InGamePanel;
 import javafx.geometry.Point2D;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
-import javafx.scene.effect.InnerShadow;
-import javafx.scene.effect.Shadow;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -25,18 +21,18 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
-import sample.Control.PlayerControl;
-import sample.Control.TankControl;
-import sample.Factories.*;
-import sample.Control.EnemySpiderControl;
+import ChipsRPG.Control.PlayerControl;
+import ChipsRPG.Control.TankControl;
+import ChipsRPG.Factories.*;
+import ChipsRPG.Control.EnemySpiderControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static sample.EntityTypes.PLAYER;
-import static sample.EntityTypes.*;
+import static ChipsRPG.EntityTypes.PLAYER;
+import static ChipsRPG.EntityTypes.*;
 
 //Player texture size 16*29 px.
 //Animated texture size 128*29 px. (frames = 8)
@@ -57,6 +53,8 @@ public class Inside extends GameApplication {
 
     private  ArrayList<String> levels = new ArrayList<>(){{
         add("Lesson_1.json");
+        add("Lesson_2.json");
+        add("Lesson_3.json");
         add("dig_and_grow.json");
         add("tankTryOut.json");
         add("ForcedPursuit.json");
@@ -117,7 +115,7 @@ public class Inside extends GameApplication {
         startLevel(getLevel());
         System.out.println("Level gameinit = " + getLevel());
 
-        getGameState().intProperty("level").setValue(1);
+        getGameState().intProperty("level").setValue(getLevel()+1);
         getGameState().intProperty("deaths").setValue(0);
 
 
@@ -131,7 +129,7 @@ public class Inside extends GameApplication {
     }
 
 
-    private Text innerShadowPlusGlowFX(String text){
+    private Text glowPlusShadowFX(String text){
 
         Glow g = new Glow();
         g.setLevel(1.0);
@@ -146,7 +144,7 @@ public class Inside extends GameApplication {
         t.setEffect(s);
         t.setText(text);
         t.setFill(Color.GOLD);
-        t.setFont(Font.font(null, FontWeight.BOLD, 35));
+        t.setFont(Font.font(null, FontWeight.EXTRA_BOLD, 35));
         t.setTextAlignment(TextAlignment.CENTER);
 
         t.setTranslateX(getGameScene().getWidth()/2 - t.getLayoutBounds().getWidth()/2);
@@ -159,8 +157,6 @@ public class Inside extends GameApplication {
     //Collision handling (physics)
     @Override
     protected void initPhysics() {
-
-        setPlayerInventory(getPlayer().getComponent(PlayerControl.class).getInventory());
 
         //-------------------------------------------------------------------------------------------------------------
         //PLAYER-CHIP-WALL---------------------------------------------------------------------------------------------
@@ -190,12 +186,20 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollisionBegin(Entity player, Entity wall) {
-                wallCollisionBegin(player, wall);
+
+/*
+                if (getPlayer().getComponent(PlayerControl.class).isOnIce()){
+                    getPlayer().getComponent(PlayerControl.class).setWallHit(true);
+                }
+*/
             }
 
             @Override
             protected void onCollision(Entity player, Entity wall) {
-/*
+                wallCollisionBegin(player, wall);
+
+
+                /*
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
@@ -207,6 +211,9 @@ public class Inside extends GameApplication {
 
             @Override
             protected void onCollisionEnd(Entity player, Entity wall) {
+
+
+                   // getPlayer().getComponent(PlayerControl.class).setWallHit(false);
 
                 //playerFound.getComponent(PlayerControl.class).setCanMove(true);
 
@@ -262,10 +269,10 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity dirtBlock) {
                 super.onCollision(player, dirtBlock);
                 switch (player.getComponent(PlayerControl.class).getLastMove()){
-                    case "up": dirtBlock.translateY(-speed*tpf()); break;
-                    case "down": dirtBlock.translateY(speed*tpf());break;
-                    case "left": dirtBlock.translateX(-speed*tpf()); break;
-                    case "right": dirtBlock.translateX(speed*tpf()); break;
+                    case "up": dirtBlock.getComponent(DirtBlockControl.class).moveUp(tpf()); break;
+                    case "down": dirtBlock.getComponent(DirtBlockControl.class).moveDown(tpf());break;
+                    case "left": dirtBlock.getComponent(DirtBlockControl.class).moveLeft(tpf()); break;
+                    case "right": dirtBlock.getComponent(DirtBlockControl.class).moveRight(tpf()); break;
                 }
             }
 
@@ -287,7 +294,6 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollision(Entity wall, Entity dirtBlock) {
                 super.onCollision(wall, dirtBlock);
-                dirtBlock.translateTowards(wall.getCenter(),-101*tpf());
 
             }
 
@@ -360,7 +366,7 @@ public class Inside extends GameApplication {
                 Text questionText;
 
                 switch (getLevel()) {
-                    case 0: questionText = innerShadowPlusGlowFX("COLLECT CHIPS TO \nGET THROUGH THE PORTAL\nUSE KEYS TO OPEN DOORS");
+                    case 0: questionText = glowPlusShadowFX("COLLECT CHIPS TO \nGET THROUGH THE PORTAL\nUSE KEYS TO OPEN DOORS");
                             getGameScene().addUINode(questionText);
                             break;
                     case 1: break;
@@ -1119,7 +1125,7 @@ public class Inside extends GameApplication {
 
         });
 
-        //Collision Handling for EnemyTest on playerFound
+        //Collision Handling for EnemyTest on player
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(ENEMYTEST,PLAYER) {
             @Override
             protected void onCollisionBegin(Entity enemyTest, Entity player){
@@ -1129,6 +1135,21 @@ public class Inside extends GameApplication {
                         getGameState().increment("deaths",1);
                         getDisplay().showMessageBox("You were killed by an Enemy!");
                         startLevel(getLevel());
+
+            }
+
+        });
+
+        //Collision Handling for Bug on player
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(BUG,PLAYER) {
+            @Override
+            protected void onCollisionBegin(Entity enemyTest, Entity player){
+
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                getDisplay().showMessageBox("You were killed by a Bug!");
+                startLevel(getLevel());
 
             }
 
@@ -1147,6 +1168,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity iceBoots) {
 
                 getPlayerInventory().add(iceBoots.getType().toString());
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("boots_pickup.wav");
                 iceBoots.removeFromWorld();
                 addInventoryToUI();
@@ -1161,6 +1183,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity fireBoots) {
 
                 getPlayerInventory().add(fireBoots.getType().toString());
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("boots_pickup.wav");
                 fireBoots.removeFromWorld();
                 addInventoryToUI();
@@ -1175,6 +1198,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity waterBoots) {
 
                 getPlayerInventory().add("WATERBOOTS");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("boots_pickup.wav");
                 waterBoots.removeFromWorld();
                 addInventoryToUI();
@@ -1190,6 +1214,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity suckerBoots) {
 
                 getPlayerInventory().add("SUCKERBOOTS");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("boots_pickup.wav");
                 suckerBoots.removeFromWorld();
                 addInventoryToUI();
@@ -1394,6 +1419,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity redKey) {
 
                 getPlayerInventory().add("REDKEY");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 redKey.removeFromWorld();
                 addInventoryToUI();
@@ -1409,6 +1435,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity blueKey) {
 
                 getPlayerInventory().add("BLUEKEY");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 blueKey.removeFromWorld();
                 addInventoryToUI();
@@ -1423,6 +1450,7 @@ public class Inside extends GameApplication {
             protected void onCollisionBegin(Entity player, Entity greenKey) {
 
                 getPlayerInventory().add("GREENKEY");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 greenKey.removeFromWorld();
                 addInventoryToUI();
@@ -1439,6 +1467,7 @@ public class Inside extends GameApplication {
                 //Collision handling for  playerFound and water
                 //getPlayerInventory().add("WATERBOOTS");
                 getPlayerInventory().add("YELLOWKEY");
+                player.getComponent(PlayerControl.class).setInventory(getPlayerInventory());
                 getAudioPlayer().playSound("Key_Pickup.wav");
                 yellowKey.removeFromWorld();
                 addInventoryToUI();
@@ -1739,6 +1768,8 @@ public class Inside extends GameApplication {
 
     //Method inserting images and numbers into UI as Nodes
     private void addInventoryToUI(){
+
+
 
         //initializing Textures with pictures (assets)
         Texture yellowKeyPNG = getAssetLoader().loadTexture("yellowKey.png", 32, 32);

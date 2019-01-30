@@ -1,16 +1,13 @@
-package sample.Factories;
+package ChipsRPG.Factories;
 
 import com.almasb.fxgl.entity.*;
 import com.almasb.fxgl.entity.components.CollidableComponent;
-import com.almasb.fxgl.physics.BoundingShape;
-import com.almasb.fxgl.physics.HitBox;
-import com.almasb.fxgl.physics.PhysicsComponent;
 import com.almasb.fxgl.texture.AnimatedTexture;
 import com.almasb.fxgl.texture.AnimationChannel;
 import javafx.util.Duration;
-import sample.Control.PlayerControl;
+import ChipsRPG.Control.PlayerControl;
 
-import static sample.EntityTypes.PLAYER;
+import static ChipsRPG.EntityTypes.PLAYER;
 
 public class PlayerFactory implements EntityFactory {
 
