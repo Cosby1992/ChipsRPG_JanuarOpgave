@@ -1,24 +1,22 @@
 <component name="ArtifactManager">
-  <artifact type="javafx" name="InsideGame">
-    <output-path>$PROJECT_DIR$/out/artifacts/InsideGame</output-path>
+  <artifact type="javafx" name="GameTest4">
+    <output-path>$PROJECT_DIR$/out/artifacts/GameTest4</output-path>
     <properties id="javafx-properties">
       <options>
         <option name="appClass" value="ChipsRPG.Inside" />
         <option name="description" value="" />
         <option name="htmlPlaceholderId" value="" />
+        <option name="nativeBundle" value="exe" />
         <option name="title" value="Inside" />
-        <option name="vendor" value="" />
+        <option name="vendor" value="King Cosby" />
         <option name="version" value="0.5" />
       </options>
     </properties>
     <root id="root">
       <element id="archive" name="GameTest4.jar">
         <element id="module-output" name="GameTest4" />
-        <element id="directory" name="META-INF">
-          <element id="file-copy" path="$PROJECT_DIR$/src/ChipsRPG/META-INF/MANIFEST.MF" />
-        </element>
+        <element id="library" level="project" name="fxgl-0.5.4-uber" />
       </element>
-      <element id="library" level="project" name="fxgl-0.5.4-uber" />
     </root>
   </artifact>
 </component>
