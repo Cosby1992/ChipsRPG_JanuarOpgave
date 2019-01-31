@@ -174,7 +174,7 @@ public class Inside extends GameApplication {
                 getGameState().increment("points", 25);
                 getGameState().increment("chipsLeft", -1);
 
-                getAudioPlayer().playSound("chip_pickup.wav");
+                getAudioPlayer().playSound("Chip_Pickup.wav");
 
             }
         });
