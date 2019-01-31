@@ -56,11 +56,11 @@ public class Inside extends GameApplication {
         add("Lesson_2.json");
         add("Lesson_3.json");
         add("dig_and_grow.json");
-        add("tankTryOut.json");
         add("ForcedPursuit.json");
         add("elements_test.json");
         add("testMap2000.json");
-        add("level3.json");}};
+        add("level3.json");
+        add("tankTryOut.json");}};
 
     private int level = 0;
 
@@ -203,10 +203,10 @@ public class Inside extends GameApplication {
                 if (player.getComponent(PlayerControl.class).isCanMove()){
                     player.getComponent(PlayerControl.class).setCanMove(false);
                 }
-
-                player.translateTowards(wall.getCenter(), -100*tpf());
-
 */
+                player.translateTowards(wall.getCenter(), -200*tpf());
+
+
             }
 
             @Override
@@ -396,6 +396,12 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity tankUp) {
                 wallCollisionBegin(player, tankUp);
+
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                getDisplay().showMessageBox("You were killed by a tank!");
+                startLevel(getLevel());
             }
 
             @Override
@@ -425,6 +431,11 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity tankDown) {
                 wallCollisionBegin(player, tankDown);
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                getDisplay().showMessageBox("You were killed by a tank!");
+                startLevel(getLevel());
             }
 
             @Override
@@ -454,6 +465,12 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity tankLeft) {
                 wallCollisionBegin(player, tankLeft);
+
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                getDisplay().showMessageBox("You were killed by a tank!");
+                startLevel(getLevel());
             }
 
             @Override
@@ -483,6 +500,12 @@ public class Inside extends GameApplication {
             @Override
             protected void onCollisionBegin(Entity player, Entity tankRight) {
                 wallCollisionBegin(player, tankRight);
+
+                getGameState().increment("points", -50);
+                getAudioPlayer().playSound("Death_By_Enemy.wav");
+                getGameState().increment("deaths",1);
+                getDisplay().showMessageBox("You were killed by a tank!");
+                startLevel(getLevel());
             }
 
             @Override
@@ -642,7 +665,7 @@ public class Inside extends GameApplication {
                 super.onCollisionBegin(player, speedUp);
                 if(!getPlayerInventory().contains("SUCKERBOOTS")) {
                     player.getComponent(PlayerControl.class).setSpeed(20);
-                    player.translateY(-400 * tpf());
+                    player.translateTowards(speedUp.getCenter(), 100*tpf());
                 }
             }
 
@@ -650,7 +673,8 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity speedUp) {
                 super.onCollision(player, speedUp);
                 if(!getPlayerInventory().contains("SUCKERBOOTS")) {
-                    player.translateY(-400 * tpf());
+                    player.translateY(-500 * tpf());
+                    player.translateTowards(speedUp.getCenter(), 100*tpf());
                 }
             }
 
@@ -667,7 +691,8 @@ public class Inside extends GameApplication {
                 super.onCollisionBegin(player, speedDown);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
                     player.getComponent(PlayerControl.class).setSpeed(20);
-                    player.translateY(400 * tpf());
+                    player.translateTowards(speedDown.getCenter(), 100*tpf());
+                    //player.translateY(400 * tpf());
                 }
             }
 
@@ -675,7 +700,8 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity speedDown) {
                 super.onCollision(player, speedDown);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
-                    player.translateY(400 * tpf());
+                    player.translateY(500 * tpf());
+                    player.translateTowards(speedDown.getCenter(), 100*tpf());
                 }
             }
 
@@ -692,7 +718,7 @@ public class Inside extends GameApplication {
                 super.onCollisionBegin(player, speedLeft);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
                     player.getComponent(PlayerControl.class).setSpeed(20);
-                    player.translateX(-400 * tpf());
+                    player.translateTowards(speedLeft.getCenter(), 100*tpf());
                 }
             }
 
@@ -700,7 +726,8 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity speedLeft) {
                 super.onCollision(player, speedLeft);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
-                    player.translateX(-400 * tpf());
+                    player.translateTowards(speedLeft.getCenter(), 100*tpf());
+                    player.translateX(-500 * tpf());
                 }
             }
 
@@ -717,7 +744,8 @@ public class Inside extends GameApplication {
                 super.onCollisionBegin(player, speedRight);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
                     player.getComponent(PlayerControl.class).setSpeed(20);
-                    player.translateX(400 * tpf());
+                    player.translateTowards(speedRight.getCenter(), 100*tpf());
+                    //player.translateX(400 * tpf());
                 }
             }
 
@@ -725,7 +753,8 @@ public class Inside extends GameApplication {
             protected void onCollision(Entity player, Entity speedRight) {
                 super.onCollision(player, speedRight);
                 if (!getPlayerInventory().contains("SUCKERBOOTS")) {
-                    player.translateX(400 * tpf());
+                    player.translateTowards(speedRight.getCenter(), 100*tpf());
+                    player.translateX(500 * tpf());
                 }
             }
 

@@ -179,7 +179,7 @@ public class PlayerControl extends Component {
 
         boolean playerCanMove = true;
 
-        List<Entity> e = FXGL.getGameWorld().getEntitiesInRange(new Rectangle2D(newPosition.getX(),newPosition.getY(),14,26));
+        List<Entity> e = FXGL.getGameWorld().getEntitiesInRange(new Rectangle2D(newPosition.getX(),newPosition.getY(),15,26));
 
         for (Entity entity:e) {
             if (entity.isType(WALL)
